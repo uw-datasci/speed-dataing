@@ -8,7 +8,13 @@ import { RootState } from "@/store/store";
 import Navbar from "../components/Navbar";
 import Image from "next/image";
 import Logo from "../../../public/images/logo.svg";
-import { FaArrowUp, FaSync, FaLock } from "react-icons/fa";
+import {
+  FaArrowUp,
+  FaSync,
+  FaHeart,
+  FaUsers,
+  FaVenusMars,
+} from "react-icons/fa";
 import axios from "axios";
 import Footer from "../components/Footer";
 
@@ -445,9 +451,9 @@ const Page = () => {
                     name="pronouns"
                     required
                     disabled={hasSubmitted}
-                    className="px-4 py-3 rounded-full w-full bg-[#4b6cb7] text-white placeholder-white outline-none font-jakarta disabled:bg-gray-400 disabled:cursor-not-allowed appearance-none pr-12"
+                    className="px-4 py-3 rounded-full w-full bg-white text-[#374995] placeholder-white outline-none font-jakarta disabled:bg-gray-400 disabled:cursor-not-allowed appearance-none pr-12"
                     style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='blue' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: "right 1rem center",
                       backgroundRepeat: "no-repeat",
                       backgroundSize: "1.5em 1.5em",
@@ -484,6 +490,65 @@ const Page = () => {
                       className="p-3 rounded-full w-full bg-gray-100 text-gray-400 placeholder-[#aabbd7] outline-none font-jakarta italic cursor-not-allowed"
                     />
                   )}
+                </div>
+
+                <div className="flex flex-col w-full bg-white p-6 rounded-2xl border-2 border-[#aabbd7]">
+                  <label className="mb-3 text-[#374995] font-jakarta text-lg font-semibold flex items-center gap-2">
+                    <FaHeart className="text-red-400" />
+                    Matching Preference <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-sm text-[#374995] opacity-75 mb-4">
+                    Who would you like to be matched with?
+                  </p>
+
+                  <div className="flex flex-col gap-3">
+                    {[
+                      {
+                        value: "0",
+                        icon: <FaUsers className="text-blue-500" />,
+                        label: "Same Gender",
+                        description:
+                          "Match me with people who identify with the same gender",
+                      },
+                      {
+                        value: "1",
+                        icon: <FaVenusMars className="text-purple-500" />,
+                        label: "Opposite Gender",
+                        description:
+                          "Match me with people who identify with a different gender",
+                      },
+                      {
+                        value: "2",
+                        icon: <FaHeart className="text-pink-500" />,
+                        label: "No Preference",
+                        description: "I'm open to being matched with anyone",
+                      },
+                    ].map(({ value, icon, label, description }) => (
+                      <label
+                        key={value}
+                        className="flex items-start gap-4 p-4 rounded-xl border-2 border-[#e1eaf8] hover:border-[#4b6cb7] hover:bg-[#f8fafc] cursor-pointer transition-all"
+                      >
+                        <input
+                          type="radio"
+                          name="intention"
+                          value={value}
+                          required
+                          className="mt-1 accent-[#4b6cb7] w-5 h-5"
+                        />
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="text-2xl mt-0.5">{icon}</div>
+                          <div className="flex flex-col">
+                            <span className="text-[#374995] font-semibold">
+                              {label}
+                            </span>
+                            <span className="text-sm text-[#374995] opacity-60">
+                              {description}
+                            </span>
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex flex-col w-full">

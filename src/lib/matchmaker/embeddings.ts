@@ -711,29 +711,84 @@ export async function handleOddParticipant(participants: { id: string }[]) {
  * RUNS cosineSimilarity[] TO GATHER THE CLOSEST VECTOR PAIRS, MATCHING THEM WITH GREEDY ALGORITHM.
  * RETURNS ARRAY OF Match TO BE INSERTED INTO curr_matches TABLE and the previous_matches TABLE.
  */
+/**
+ * ASSUMES EVERY ROW IN form_responses HAS A VALID vector_embedding ENCODED AS A numeric[].
+ * ASSUMES THERE IS AN EVEN NUMBER OF PARTICIPANTS IN form_responses, AS HANDLED BY handleOddParticipant.
+ * ASSUMES THE curr_matches TABLE IS EMPTY, AS HANDLED BY clearCurrMatchesTable.
+ * RUNS cosineSimilarity[] TO GATHER THE CLOSEST VECTOR PAIRS, MATCHING THEM WITH GREEDY ALGORITHM.
+ * EXCLUDES PAIRS WHO HAVE ALREADY BEEN MATCHED IN previous_matches TABLE.
+ * PRIORITIZES MATCHING BASED ON GENDER INTENTION (0=same, 1=opposite, 2=both).
+ * RETURNS ARRAY OF Match TO BE INSERTED INTO curr_matches TABLE and the previous_matches TABLE.
+ */
 export async function matchParticipants(): Promise<Match[]> {
-  // fetch everyone's id + embedding
+  // fetch everyone's id + embedding + gender + intention
   const { data: rows, error: fetchErr } = await supabase
     .from("form_responses")
-    .select("id, email, vector_embedding");
+    .select("id, email, vector_embedding, pronouns, intention");
   if (fetchErr) {
     console.error("Could not fetch embeddings:", fetchErr);
     throw fetchErr;
   }
   if (!rows) return [];
 
+  // Helper function to determine gender from pronouns
+  function getGender(pronouns: string): "male" | "female" | "other" {
+    const p = pronouns.toLowerCase();
+    if (p.includes("he/him") || p.includes("he")) return "male";
+    if (p.includes("she/her") || p.includes("she")) return "female";
+    return "other";
+  }
+
+  type ParticipantRow = {
+    id: string;
+    email: string;
+    vector_embedding: number[];
+    pronouns: string;
+    intention: number;
+  };
+
+  // Helper function to check if two people's intentions are compatible
+  function areIntentionsCompatible(
+    person1: ParticipantRow,
+    person2: ParticipantRow
+  ): boolean {
+    const gender1 = getGender(person1.pronouns);
+    const gender2 = getGender(person2.pronouns);
+
+    // Check person1's intention
+    const person1Compatible =
+      person1.intention === 2 || // both genders
+      (person1.intention === 0 && gender1 === gender2) || // same gender
+      (person1.intention === 1 && gender1 !== gender2); // opposite gender
+
+    // Check person2's intention
+    const person2Compatible =
+      person2.intention === 2 || // both genders
+      (person2.intention === 0 && gender1 === gender2) || // same gender
+      (person2.intention === 1 && gender1 !== gender2); // opposite gender
+
+    // Both must be compatible with each other
+    return person1Compatible && person2Compatible;
+  }
+
   // build all pairwise similarities
-  type Pair = { i: number; j: number; sim: number };
+  type Pair = { i: number; j: number; sim: number; intentionMatch: boolean };
   const pairs: Pair[] = [];
   for (let i = 0; i < rows.length; i++) {
     const vi = rows[i].vector_embedding!;
     for (let j = i + 1; j < rows.length; j++) {
       const vj = rows[j].vector_embedding!;
-      pairs.push({ i, j, sim: cosineSimilarity(vi, vj) });
+      const intentionMatch = areIntentionsCompatible(rows[i], rows[j]);
+      pairs.push({
+        i,
+        j,
+        sim: cosineSimilarity(vi, vj),
+        intentionMatch,
+      });
     }
   }
 
-  // Fetch already matched pairs from previous_matches table (not curr_matches!)
+  // Fetch already matched pairs from previous_matches table
   const { data: already_matched, error: prevErr } = await supabase
     .from("previous_matches")
     .select("person1_id, person2_id");
@@ -759,14 +814,25 @@ export async function matchParticipants(): Promise<Match[]> {
     `Found ${already_matched?.length || 0} previous matches to exclude.`
   );
 
-  // greedy match: pick best pairs without reusing any participant
+  // Separate pairs into intention-compatible and intention-incompatible
+  const intentionPairs = pairs.filter((p) => p.intentionMatch);
+  const nonIntentionPairs = pairs.filter((p) => !p.intentionMatch);
+
+  // Sort both by similarity (descending)
+  intentionPairs.sort((a, b) => b.sim - a.sim);
+  nonIntentionPairs.sort((a, b) => b.sim - a.sim);
+
+  console.log(
+    `Total pairs: ${pairs.length}, Intention-compatible: ${intentionPairs.length}, Non-compatible: ${nonIntentionPairs.length}`
+  );
+
+  // Track who has been matched
   const used = new Set<number>();
   const matches: Match[] = [];
 
-  pairs.sort((a, b) => b.sim - a.sim); // sort descending by similarity
-
-  for (const { i, j, sim } of pairs) {
-    // for each pair and similarity
+  // PHASE 1: Match intention-compatible pairs first (greedy by similarity)
+  console.log("\n=== PHASE 1: Matching intention-compatible pairs ===");
+  for (const { i, j, sim } of intentionPairs) {
     const id1 = rows[i].id,
       id2 = rows[j].id;
 
@@ -783,7 +849,7 @@ export async function matchParticipants(): Promise<Match[]> {
       continue;
     }
 
-    // otherwise take this pair
+    // take this pair
     used.add(i);
     used.add(j);
     matches.push({
@@ -793,18 +859,89 @@ export async function matchParticipants(): Promise<Match[]> {
       emoji: "",
     });
 
+    const gender1 = getGender(rows[i].pronouns);
+    const gender2 = getGender(rows[j].pronouns);
     console.log(
-      `Matched: ${rows[i].email} ↔ ${rows[j].email} (similarity: ${sim.toFixed(
-        4
-      )})`
+      `✓ Matched (INTENTION): ${rows[i].email} [${gender1}, pref=${
+        rows[i].intention
+      }] ↔ ${rows[j].email} [${gender2}, pref=${
+        rows[j].intention
+      }] (sim: ${sim.toFixed(4)})`
     );
 
     if (used.size === rows.length) break;
   }
 
   console.log(
-    `Created ${matches.length} new matches (${used.size}/${rows.length} participants matched)`
+    `\nPhase 1 complete: ${matches.length} matches, ${used.size}/${rows.length} participants matched`
   );
+
+  // PHASE 2: Match remaining participants by similarity only (ignoring intention)
+  if (used.size < rows.length) {
+    console.log(
+      "\n=== PHASE 2: Matching remaining participants (ignoring intention) ==="
+    );
+    for (const { i, j, sim } of nonIntentionPairs) {
+      const id1 = rows[i].id,
+        id2 = rows[j].id;
+
+      // skip if either is already in a new match
+      if (used.has(i) || used.has(j)) continue;
+
+      // skip if they've met before
+      const met1 = prevMap.get(id1)?.has(id2) ?? false;
+      const met2 = prevMap.get(id2)?.has(id1) ?? false;
+      if (met1 || met2) {
+        console.log(
+          `Skipping pair (${rows[i].email}, ${rows[j].email}) - already matched before`
+        );
+        continue;
+      }
+
+      // take this pair
+      used.add(i);
+      used.add(j);
+      matches.push({
+        person1_id: id1,
+        person2_id: id2,
+        similarity_score: sim,
+        emoji: "",
+      });
+
+      const gender1 = getGender(rows[i].pronouns);
+      const gender2 = getGender(rows[j].pronouns);
+      console.log(
+        `○ Matched (FALLBACK): ${rows[i].email} [${gender1}, pref=${
+          rows[i].intention
+        }] ↔ ${rows[j].email} [${gender2}, pref=${
+          rows[j].intention
+        }] (sim: ${sim.toFixed(4)})`
+      );
+
+      if (used.size === rows.length) break;
+    }
+  }
+
+  console.log(`\n=== MATCHING COMPLETE ===`);
+  console.log(`Total matches: ${matches.length}`);
+  console.log(`Participants matched: ${used.size}/${rows.length}`);
+
+  if (used.size < rows.length) {
+    console.warn(
+      `WARNING: ${rows.length - used.size} participants could not be matched!`
+    );
+    const unmatchedIndices = Array.from(
+      { length: rows.length },
+      (_, i) => i
+    ).filter((i) => !used.has(i));
+    unmatchedIndices.forEach((i) => {
+      console.warn(
+        `  - ${rows[i].email} [${getGender(rows[i].pronouns)}, pref=${
+          rows[i].intention
+        }]`
+      );
+    });
+  }
 
   return matches;
 }
