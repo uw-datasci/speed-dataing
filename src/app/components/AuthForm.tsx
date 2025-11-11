@@ -34,7 +34,12 @@ export default function AuthForm() {
           role: data.role,
         })
       );
+
+      // Navigate to dashboard
       router.push("/dashboard");
+
+      // Auto-refresh after navigation
+      window.location.reload();
     } catch (e: any) {
       console.error(`[Login Failed] Email: ${email}, Error: ${e.message}`);
       setError("Invalid email or password");
