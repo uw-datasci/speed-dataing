@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS form_responses (
   evil_hobby VARCHAR(10),
   most_likely_to VARCHAR(10),
   caught_watching VARCHAR(10),
+  vector_embedding FLOAT8[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
