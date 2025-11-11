@@ -827,7 +827,7 @@ const Page = () => {
                   Survey Completed!
                 </h2>
                 <p className="text-[#374995] opacity-75">
-                  Thank you for participating in Speed Friending!
+                  Thank you for participating in Speed Dataing!
                   <br />
                   Your responses have been recorded and will be used for
                   matching.

@@ -98,7 +98,7 @@ const HistoryPage = () => {
               </button>
             </div>
             <p className="text-gray-600 mt-2">
-              View all your previous matches from speed friending here
+              View all your previous matches from speed dataing here
             </p>
           </div>
 
