@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS previous_matches (
 CREATE INDEX IF NOT EXISTS idx_previous_matches_user_id ON previous_matches(user_id);
 
 -- Optional: Create a GIN index for faster array operations (searching within the array)
-CREATE INDEX IF NOT EXISTS idx_previous_matches_prev_matches_gin ON previous_matches USING GIN(prev_matches);
+CREATE INDEX IF NOT EXISTS idx_previous_matches_prev_matches_gin ON previous_matches USING GIN(matched_with);
 
