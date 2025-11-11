@@ -3,7 +3,7 @@
 
 -- Create previous_matches table if it doesn't exist
 CREATE TABLE IF NOT EXISTS previous_matches (
-  user_id UUID PRIMARY KEY,
+  id UUID PRIMARY KEY,
   matched_with UUID[] NOT NULL DEFAULT '{}',
   similarity_score FLOAT8[] NOT NULL,
   emoji TEXT[],
