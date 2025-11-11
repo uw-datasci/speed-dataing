@@ -3,7 +3,7 @@
 
 -- Create form_responses table if it doesn't exist
 CREATE TABLE IF NOT EXISTS form_responses (
-  id SERIAL PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
   pronouns VARCHAR(50),
   email VARCHAR(255) NOT NULL,
