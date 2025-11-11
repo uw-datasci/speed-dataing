@@ -739,10 +739,18 @@ export async function matchParticipants(): Promise<Match[]> {
     return "other";
   }
 
+  type ParticipantRow = {
+    id: string;
+    email: string;
+    vector_embedding: number[];
+    pronouns: string;
+    intention: number;
+  };
+
   // Helper function to check if two people's intentions are compatible
   function areIntentionsCompatible(
-    person1: (typeof rows)[0],
-    person2: (typeof rows)[0]
+    person1: ParticipantRow,
+    person2: ParticipantRow
   ): boolean {
     const gender1 = getGender(person1.pronouns);
     const gender2 = getGender(person2.pronouns);
