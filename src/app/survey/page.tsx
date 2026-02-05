@@ -30,6 +30,7 @@ const Page = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isCheckingSubmission, setIsCheckingSubmission] = useState(true);
+  const [selectedPronouns, setSelectedPronouns] = useState<string>("Select from the following");
   const formRef = useRef<HTMLFormElement>(null);
 
   const checkFormStatus = async () => {
@@ -451,6 +452,8 @@ const Page = () => {
                     name="pronouns"
                     required
                     disabled={hasSubmitted}
+                    value={selectedPronouns}
+                    onChange={(e) => setSelectedPronouns(e.target.value)}
                     className="px-4 py-3 rounded-full w-full bg-white text-[#374995] placeholder-white outline-none font-jakarta disabled:bg-gray-400 disabled:cursor-not-allowed appearance-none pr-12"
                     style={{
                       backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='blue' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
@@ -498,34 +501,58 @@ const Page = () => {
                     Matching Preference <span className="text-red-500">*</span>
                   </label>
                   <p className="text-sm text-[#374995] opacity-75 mb-4">
-                    Who would you like to be matched with?
+                    {selectedPronouns === "They/Them" || selectedPronouns === "Other"
+                      ? "What gender would you like to be matched with?"
+                      : "What is your sexuality?"}
                   </p>
 
                   <div className="flex flex-col gap-3">
-                    {[
-                      {
-                        value: "0",
-                        icon: <FaUsers className="text-blue-500" />,
-                        label: "Same Gender",
-                        description:
-                          "Match me with people who identify with the same gender",
-                      },
-                      {
-                        value: "1",
-                        icon: <FaVenusMars className="text-purple-500" />,
-                        label: "Opposite Gender",
-                        description:
-                          "Match me with people who identify with a different gender",
-                      },
-                      {
-                        value: "2",
-                        icon: <FaHeart className="text-pink-500" />,
-                        label: "No Preference",
-                        description: "I'm open to being matched with anyone",
-                      },
-                    ].map(({ value, icon, label, description }) => (
+                    {(selectedPronouns === "They/Them" || selectedPronouns === "Other"
+                      ? [
+                          {
+                            value: "3",
+                            icon: <FaUsers className="text-blue-500" />,
+                            label: "Woman",
+                            description: "Match me with women!",
+                          },
+                          {
+                            value: "3",
+                            icon: <FaUsers className="text-blue-500" />,
+                            label: "Men",
+                            description: "Match me with men!",
+                          },
+                          {
+                            value: "3",
+                            icon: <FaHeart className="text-pink-500" />,
+                            label: "Any",
+                            description: "I'm open to being matched with anyone",
+                          },
+                        ]
+                      : [
+                          {
+                            value: "0",
+                            icon: <FaUsers className="text-blue-500" />,
+                            label: "Homosexual",
+                            description:
+                              "Match me with people who identify with the same gender",
+                          },
+                          {
+                            value: "1",
+                            icon: <FaVenusMars className="text-purple-500" />,
+                            label: "Heterosexual",
+                            description:
+                              "Match me with people who identify with a different gender",
+                          },
+                          {
+                            value: "2",
+                            icon: <FaHeart className="text-pink-500" />,
+                            label: "Bisexual/Pansexual",
+                            description: "I'm open to being matched with anyone",
+                          },
+                        ]
+                    ).map(({ value, icon, label, description }) => (
                       <label
-                        key={value}
+                        key={label}
                         className="flex items-start gap-4 p-4 rounded-xl border-2 border-[#e1eaf8] hover:border-[#4b6cb7] hover:bg-[#f8fafc] cursor-pointer transition-all"
                       >
                         <input
