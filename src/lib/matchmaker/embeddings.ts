@@ -54,7 +54,7 @@ interface Match {
 const oddId = uuidv4();
 const odd_participant: Participant = {
   id: oddId,
-  email: "s9bhagat@uwaterloo.ca",
+  email: "a29jha@uwaterloo.ca",
   name: "Samay Bhagat",
   pronouns: "he/him",
   program: "CFM", // used for vector embedding
