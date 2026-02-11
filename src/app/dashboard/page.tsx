@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-valentine-light">
+    <div className="min-h-screen flex flex-col bg-[#FFF7FA]">
       <Navbar />
       <Image
         src={Logo}
