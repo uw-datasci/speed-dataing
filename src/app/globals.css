@@ -1,8 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
+@source "./src/**/*.{js,ts,jsx,tsx,mdx}";
 
 :root {
   --background: #ffffff;
+  --foreground: #111111;
 }
 
 @theme {
@@ -11,6 +13,14 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-valentine-red: #FF1744;
+  --color-valentine-lightRed: #FF5252;
+  --color-valentine-pink: #FF4081;
+  --color-valentine-lightPink: #FF80AB;
+  --color-valentine-darkPink: #F50057;
+  --color-valentine-light: #FFE9EE;
+  --color-grey1: #D1D5DB;
+  --color-grey2: #9CA3AF;
 }
 
 body {
