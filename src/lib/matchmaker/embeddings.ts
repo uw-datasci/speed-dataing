@@ -54,12 +54,12 @@ interface Match {
 const oddId = uuidv4();
 const odd_participant: Participant = {
   id: oddId,
-  email: "a29jha@uwaterloo.ca",
-  name: "Samay Bhagat",
-  pronouns: "he/him",
-  program: "CFM", // used for vector embedding
-  year: "3A", // used for vector embedding
-  social_media_links: "https://www.linkedin.com/in/samaybhagat/",
+  email: "k6guan@uwaterloo.ca",
+  name: "Karen Guan",
+  pronouns: "she/her",
+  program: "CS", // used for vector embedding
+  year: "2B", // used for vector embedding
+  social_media_links: "https://www.linkedin.com/in/karen-guan-gzy/",
   career: "Ideally quant, currently SWE. ", // used for vector embedding
   friend_traits: "A calm and respectful friend. ", // used for vector embedding
   self_desc: "Peculiar. ", // used for vector embedding
