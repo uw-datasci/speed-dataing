@@ -65,8 +65,8 @@ export default function AuthForm() {
           type="email"
           required
           placeholder="Email"
-          className="border border-2 border-[#374995] p-2 rounded-full pl-6 text-blue
-          hover:shadow-[0_0_10px_rgba(163,192,232,0.3)]"
+          className="border border-2 border-valentine-red p-2 rounded-full pl-6 text-valentine-red
+          hover:shadow-[0_0_10px_rgba(255,23,68,0.2)]"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -74,8 +74,8 @@ export default function AuthForm() {
           type="password"
           required
           placeholder="Password"
-          className="border border-2 border-[#374995] p-2 rounded-full pl-6 text-blue
-          hover:shadow-[0_0_10px_rgba(163,192,232,0.3)]"
+          className="border border-2 border-valentine-red p-2 rounded-full pl-6 text-valentine-red
+          hover:shadow-[0_0_10px_rgba(255,23,68,0.2)]"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -83,8 +83,8 @@ export default function AuthForm() {
           type="password"
           required
           placeholder="Event Key"
-          className="border border-2 border-[#374995] p-2 rounded-full pl-6 text-blue
-          hover:shadow-[0_0_10px_rgba(163,192,232,0.3)]"
+          className="border border-2 border-valentine-red p-2 rounded-full pl-6 text-valentine-red
+          hover:shadow-[0_0_10px_rgba(255,23,68,0.2)]"
           value={secretKey}
           onChange={(e) => setSecretKey(e.target.value)}
         />
@@ -95,11 +95,11 @@ export default function AuthForm() {
 
         <button
           type="submit"
-          className="z-50 flex items-center justify-center gap-3 border-2 border-[#374995] px-6 py-2 rounded-full bg-gradient-to-r from-[#374995] to-[#5989fc] text-white
-        focus:outline-none focus:ring-2 focus:ring-[#374995] focus:ring-opacity-50 
-        focus:border-[#374995] focus:shadow-[0_0_15px_rgba(55,73,149,0.3)]
+          className="z-50 flex items-center justify-center gap-3 border-2 border-valentine-red px-6 py-2 rounded-full bg-gradient-to-r from-valentine-red to-valentine-pink text-white
+        focus:outline-none focus:ring-2 focus:ring-valentine-red focus:ring-opacity-50 
+        focus:border-valentine-red focus:shadow-[0_0_15px_rgba(255,23,68,0.3)]
         transition-all duration-300 ease-in-out
-        hover:shadow-[0_0_10px_rgba(163,192,232,0.3)]
+        hover:shadow-[0_0_10px_rgba(255,23,68,0.2)]
         hover:scale-105 active:scale-95"
         >
           <span>Continue</span>

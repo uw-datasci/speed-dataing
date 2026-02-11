@@ -70,10 +70,10 @@ export default function MatchPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#A6C3EA]">
+      <main className="min-h-screen bg-valentine-light">
         <Navbar />
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-[#222949] text-xl">Loading your match...</div>
+          <div className="text-valentine-red text-xl">Loading your match...</div>
         </div>
         <Footer />
       </main>
@@ -82,16 +82,16 @@ export default function MatchPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[#A6C3EA]">
+      <main className="min-h-screen bg-valentine-light">
         <Navbar />
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-[#222949] text-xl text-center max-w-md mx-auto px-4">
+          <div className="text-valentine-red text-xl text-center max-w-md mx-auto px-4">
             <p className="mb-4">{error}</p>
             {error.includes("haven't submitted the form") && (
               <div className="mt-4">
                 <a 
                   href="/survey" 
-                  className="bg-[#374995] text-white px-6 py-3 rounded-lg hover:bg-[#5989fc] transition-colors inline-block"
+                  className="bg-valentine-red text-white px-6 py-3 rounded-lg hover:bg-valentine-pink transition-colors inline-block"
                 >
                   Submit Form Now
                 </a>
@@ -105,7 +105,7 @@ export default function MatchPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#A6C3EA]">
+    <main className="min-h-screen bg-valentine-light">
       <Navbar />
       {matchData && <DisplayCard matchData={matchData} />}
       <Footer />

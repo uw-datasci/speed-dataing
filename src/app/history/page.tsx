@@ -76,22 +76,22 @@ const HistoryPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#E6EFFD]">
+    <div className="min-h-screen bg-valentine-light">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-[#374995]">
+          <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-valentine-lightRed">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <FaHistory className="text-2xl text-[#374995]" />
-                <h1 className="text-3xl font-bold text-[#374995]">Your Match History</h1>
+                <FaHistory className="text-2xl text-valentine-red" />
+                <h1 className="text-3xl font-bold text-valentine-red">Your Match History</h1>
               </div>
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="bg-[#374995] text-white px-4 py-2 rounded-lg hover:bg-[#5989fc] transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="bg-valentine-red text-white px-4 py-2 rounded-lg hover:bg-valentine-pink transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 <FaSync className={`${isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
@@ -103,11 +103,11 @@ const HistoryPage = () => {
           </div>
 
           {/* Content */}
-          <div className="bg-white rounded-lg shadow-lg border-2 border-[#374995]">
+          <div className="bg-white rounded-lg shadow-lg border-2 border-valentine-lightRed">
             {loading ? (
               <div className="p-8 text-center">
                 <div className="inline-flex items-center">
-                  <FaSync className="animate-spin mr-2 text-[#374995]" />
+                  <FaSync className="animate-spin mr-2 text-valentine-red" />
                   Loading your match history...
                 </div>
               </div>
@@ -116,7 +116,7 @@ const HistoryPage = () => {
                 <div className="text-red-500 mb-4">{error}</div>
                 <button
                   onClick={fetchHistory}
-                  className="bg-[#374995] text-white px-4 py-2 rounded-lg hover:bg-[#5989fc] transition-colors"
+                  className="bg-valentine-red text-white px-4 py-2 rounded-lg hover:bg-valentine-pink transition-colors"
                 >
                   Try Again
                 </button>
@@ -132,7 +132,7 @@ const HistoryPage = () => {
             ) : (
               <>
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-[#374995]">
+                  <h3 className="text-lg font-semibold text-valentine-red">
                     Previous Matches ({matches.length})
                   </h3>
                 </div>
@@ -194,7 +194,7 @@ const HistoryPage = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
                               {match.social_media_links ? (
-                                <span className="text-[#374995] hover:underline cursor-pointer">
+                                <span className="text-valentine-red hover:underline cursor-pointer">
                                   {match.social_media_links}
                                 </span>
                               ) : (
@@ -204,7 +204,7 @@ const HistoryPage = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              <span className="font-medium text-[#374995]">
+                              <span className="font-medium text-valentine-red">
                                 {formatSimilarityScore(match.similarity_score)}
                               </span>
                             </div>

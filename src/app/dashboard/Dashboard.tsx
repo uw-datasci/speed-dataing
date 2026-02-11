@@ -15,11 +15,11 @@ export default function Dashboard() {
       <div className="h-screen w-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center">
           <div className="flex space-x-2">
-            <div className="w-3 h-3 bg-[#374995] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-3 h-3 bg-[#374995] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-3 h-3 bg-[#374995] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="w-3 h-3 bg-valentine-red rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-3 h-3 bg-valentine-red rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-3 h-3 bg-valentine-red rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
           </div>
-          <p className="mt-4 text-[#374995] text-lg">Loading your dashboard</p>
+          <p className="mt-4 text-valentine-red text-lg">Loading your dashboard</p>
         </div>
       </div>
     );

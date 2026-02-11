@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Logo from "../../../public/images/dscLogo.png";
+import Logo from "../../../public/images/dsclogo-valentines.png";
 import { FaRegSmile } from "react-icons/fa";
 import { FaRegSmileWink } from "react-icons/fa";
 import { useSelector } from "react-redux";
@@ -57,8 +57,8 @@ const Navbar = () => {
       </div>
 
       <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-        <span className="text-md md:text-2xl font-bold tracking-wide text-[#374995]  font-jakarta">
-          Speed <span className="text-[#5989fc] font-jakarta">Data</span>-ing
+        <span className="text-md md:text-2xl font-bold tracking-wide text-[#FF5252]  font-jakarta">
+          Speed <span className="text-[#FF1744] font-jakarta">Data</span>-ing
           Social
         </span>
       </div>
@@ -66,27 +66,27 @@ const Navbar = () => {
       <div className="hidden md:flex items-center gap-6">
         <Link
           href="/dashboard"
-          className="text-[#374995] cursor-pointer font-semibold hover:text-blue-500 font-medium transition font-jakarta"
+          className="text-[#FF5252] cursor-pointer font-semibold hover:bg-[#f5e2e3] font-medium transition font-jakarta"
         >
           Dashboard
         </Link>
         <Link
           href="/information"
-          className="text-[#374995] cursor-pointer font-semibold hover:text-blue-500 font-medium transition font-jakarta"
+          className="text-[#FF5252] cursor-pointer font-semibold hover:bg-[#f5e2e3] font-medium transition font-jakarta"
         >
           How it works
         </Link>
         {isAdmin && (
           <button
             onClick={handleAdminClick}
-            className="text-[#5989fc] cursor-pointer font-semibold hover:text-blue-500 font-medium transition font-jakarta border-2 border-[#5989fc] px-3 py-1 rounded-lg"
+            className="text-[#FF5252] cursor-pointer font-semibold hover:bg-[#f5e2e3] font-medium transition font-jakarta border-2 border-[#FF5252] px-3 py-1 rounded-lg"
           >
             Admin
           </button>
         )}
         <button
           onClick={handleSignOut}
-          className="rounded-xl cursor-pointer font-semibold p-2 hover:bg-[#e1eaf8] transition font-jakarta"
+          className="text-[#FF5252] rounded-xl cursor-pointer font-semibold p-2 hover:bg-[#f5e2e3] transition font-jakarta"
         >
           Log Out
         </button>
@@ -101,20 +101,20 @@ const Navbar = () => {
       </button>
 
       <div
-        className={`flex-start fixed inset-0 bg-[#e1eaf8] flex flex-col items-center justify-center gap-4
+        className={`flex-start fixed inset-0 bg-[#f5e2e3] flex flex-col items-center justify-center gap-4
           transition-transform duration-500 ease-in-out 
           ${menuOpen ? "translate-x-0" : "translate-x-full"}
           z-20 font-jakarta`}
       >
         <div className="items-align-left  flex flex-col gap-10">
           <button
-            className="absolute top-6 right-6 text-3xl text-[#374995] focus:outline-none font-jakarta"
+            className="absolute top-6 right-6 text-3xl text-[#FF5252] focus:outline-none font-jakarta"
             onClick={() => setMenuOpen(false)}
             aria-label="Close menu"
           ></button>
           <Link
             href="/dashboard"
-            className="text-2xl text-jakarta text-[#374995] hover:text-blue-500 font-bold transition font-jakarta"
+            className="text-2xl text-jakarta text-[#FF5252] hover:text-[#f5e2e3]-500 font-bold transition font-jakarta"
             onClick={() => setMenuOpen(false)}
           >
             {" "}
@@ -122,14 +122,14 @@ const Navbar = () => {
           </Link>
           <Link
             href="/information"
-            className="text-2xl text-[#374995] hover:text-blue-500 font-bold transition font-jakarta"
+            className="text-2xl text-[#FF5252] hover:text-[#f5e2e3]-500 font-bold transition font-jakarta"
             onClick={() => setMenuOpen(false)}
           >
             how it works
           </Link>
           <Link
             href="/survey"
-            className="text-2xl text-[#374995] hover:text-blue-500 font-bold transition font-jakarta"
+            className="text-2xl text-[#FF5252] hover:text-[#f5e2e3]-500 font-bold transition font-jakarta"
             onClick={() => setMenuOpen(false)}
           >
             form
@@ -140,14 +140,14 @@ const Navbar = () => {
                 handleAdminClick();
                 setMenuOpen(false);
               }}
-              className="text-2xl text-[#5989fc] hover:text-blue-500 font-bold transition font-jakarta border-2 border-[#5989fc] px-3 py-1 rounded-lg"
+              className="text-2xl text-[#FF5252] hover:text-[#f5e2e3]-500 font-bold transition font-jakarta border-2 border-[#FF5252] px-3 py-1 rounded-lg"
             >
               Admin Panel
             </button>
           )}
           <button
             onClick={handleSignOut}
-            className="border border-2 rounded-xl p-2 text-[#374995] hover:bg-[#374995] hover:text-white transition font-jakarta"
+            className="border border-2 rounded-xl p-2 text-[#FF5252] hover:bg-[#f5e2e3] hover:text-white transition font-jakarta"
           >
             Log Out
           </button>

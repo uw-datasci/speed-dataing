@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import Navbar from "../components/Navbar";
 import Image from "next/image";
-import Logo from "../../../public/images/logo.svg";
+import Logo from "../../../public/images/logo-valentines-p.svg";
 import {
   FaArrowUp,
   FaSync,
@@ -287,35 +287,35 @@ const Page = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-[#e1eaf8] min-h-screen w-screen">
+      <div className="bg-valentine-light min-h-screen w-screen">
         <Navbar />
         <div className="pt-12 max-w-4xl mx-auto px-4 flex flex-col items-center justify-center min-h-[60vh]">
           <div className="flex space-x-2">
             <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
+              className="w-3 h-3 bg-valentine-red rounded-full animate-bounce"
               style={{ animationDelay: "0ms" }}
             ></div>
             <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
+              className="w-3 h-3 bg-valentine-red rounded-full animate-bounce"
               style={{ animationDelay: "150ms" }}
             ></div>
             <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
+              className="w-3 h-3 bg-valentine-red rounded-full animate-bounce"
               style={{ animationDelay: "300ms" }}
             ></div>
           </div>
-          <p className="mt-4 text-[#374995] text-lg">Checking form status...</p>
+          <p className="mt-4 text-valentine-red text-lg">Checking form status...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#e1eaf8] min-h-screen w-screen">
+    <div className="bg-valentine-light min-h-screen w-screen">
       <Navbar />
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-[#374995] text-white shadow-md hover:bg-[#2c3d85] transition"
+        className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-valentine-red text-white shadow-md hover:bg-valentine-lightRed transition"
         aria-label="Back to top"
       >
         <FaArrowUp />
@@ -325,30 +325,30 @@ const Page = () => {
         <div
           className={`p-4 rounded-lg border-2 ${
             hasSubmitted
-              ? "bg-blue-50 border-blue-200 text-blue-800"
+              ? "bg-valentine-light border-valentine-lightRed text-valentine-red"
               : sessionState === "form_active"
-              ? "bg-blue-50 border-blue-200 text-blue-800"
+              ? "bg-valentine-light border-valentine-lightRed text-valentine-red"
               : sessionState === "matching_in_progress"
-              ? "bg-blue-50 border-blue-200 text-blue-800"
+              ? "bg-valentine-light border-valentine-lightRed text-valentine-red"
               : sessionState === "matches_released"
-              ? "bg-blue-50 border-blue-200 text-blue-800"
-              : "bg-blue-50 border-blue-200 text-blue-800"
+              ? "bg-valentine-light border-valentine-lightRed text-valentine-red"
+              : "bg-valentine-light border-valentine-lightRed text-valentine-red"
           }`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {hasSubmitted ? (
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-valentine-red rounded-full"></div>
               ) : isCheckingSubmission ? (
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                <div className="w-3 h-3 bg-valentine-red rounded-full animate-pulse"></div>
               ) : sessionState === "form_active" ? (
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-valentine-red rounded-full"></div>
               ) : sessionState === "matching_in_progress" ? (
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                <div className="w-3 h-3 bg-valentine-red rounded-full animate-pulse"></div>
               ) : sessionState === "matches_released" ? (
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-valentine-red rounded-full"></div>
               ) : (
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-valentine-red rounded-full"></div>
               )}
               <span className="font-medium">
                 {hasSubmitted
@@ -367,7 +367,7 @@ const Page = () => {
             <button
               onClick={checkFormStatus}
               disabled={isLoading}
-              className="bg-[#374995] text-white px-3 py-1 rounded text-sm hover:bg-[#5989fc] transition-colors disabled:opacity-50 flex items-center gap-2"
+              className="bg-valentine-red text-white px-3 py-1 rounded text-sm hover:bg-valentine-pink transition-colors disabled:opacity-50 flex items-center gap-2"
             >
               <FaSync className={isLoading ? "animate-spin" : ""} />
               Refresh
@@ -432,7 +432,7 @@ const Page = () => {
 
               <div className="flex flex-col md:flex-row gap-6 justify-between">
                 <div className="flex flex-col w-full">
-                  <label className="mb-1 text-[#374995] font-jakarta">
+                  <label className="mb-1 text-valentine-red font-jakarta">
                     Your Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -441,11 +441,11 @@ const Page = () => {
                     placeholder="First and Last Name"
                     required
                     disabled={hasSubmitted}
-                    className="p-3 rounded-full w-full bg-white text-[#374995] placeholder-[#aabbd7] outline-none font-jakarta disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="p-3 rounded-full w-full bg-white text-valentine-red placeholder-grey2 outline-none font-jakarta border border-grey2 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div className="flex flex-col w-full">
-                  <label className="mb-1 text-[#374995] font-jakarta">
+                  <label className="mb-1 text-valentine-red font-jakarta">
                     Pronouns <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -454,9 +454,9 @@ const Page = () => {
                     disabled={hasSubmitted}
                     value={selectedPronouns}
                     onChange={(e) => setSelectedPronouns(e.target.value)}
-                    className="px-4 py-3 rounded-full w-full bg-white text-[#374995] placeholder-white outline-none font-jakarta disabled:bg-gray-400 disabled:cursor-not-allowed appearance-none pr-12"
+                    className="px-4 py-3 rounded-full w-full bg-white text-valentine-red placeholder-white outline-none font-jakarta border border-grey2 disabled:bg-gray-400 disabled:cursor-not-allowed appearance-none pr-12"
                     style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='blue' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23FF1744' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                       backgroundPosition: "right 1rem center",
                       backgroundRepeat: "no-repeat",
                       backgroundSize: "1.5em 1.5em",
@@ -473,7 +473,7 @@ const Page = () => {
 
               <div className="flex flex-col gap-4 mt-4">
                 <div className="flex flex-col w-full">
-                  <label className="mb-1 text-[#374995] font-jakarta">
+                  <label className="mb-1 text-valentine-red font-jakarta">
                     DSC Email
                   </label>
                   {userEmail ? (
@@ -482,7 +482,7 @@ const Page = () => {
                       name="email"
                       value={userEmail}
                       disabled
-                      className="p-3 rounded-full w-full bg-gray-100 text-black placeholder-[#aabbd7] outline-none font-jakarta cursor-not-allowed"
+                      className="p-3 rounded-full w-full bg-gray-100 text-black placeholder-grey2 outline-none font-jakarta border border-grey2 cursor-not-allowed"
                     />
                   ) : (
                     <input
@@ -490,22 +490,22 @@ const Page = () => {
                       name="email"
                       placeholder="Loading your email..."
                       disabled
-                      className="p-3 rounded-full w-full bg-gray-100 text-gray-400 placeholder-[#aabbd7] outline-none font-jakarta italic cursor-not-allowed"
+                      className="p-3 rounded-full w-full bg-gray-100 text-gray-400 placeholder-grey2 outline-none font-jakarta border border-grey2 italic cursor-not-allowed"
                     />
                   )}
                 </div>
 
-                <div className="flex flex-col w-full bg-white p-6 rounded-2xl border-2 border-[#aabbd7]">
-                  <label className="mb-3 text-[#374995] font-jakarta text-lg font-semibold flex items-center gap-2">
+                <div className="flex flex-col w-full bg-white p-6 rounded-2xl border-2 border-grey2">
+                  <label className="mb-3 text-valentine-red font-jakarta text-lg font-semibold flex items-center gap-2">
                     <FaHeart className="text-red-400" />
                     Matching Preference <span className="text-red-500">*</span>
                   </label>
-                  <p className="text-sm text-[#374995] opacity-75 mb-4">
+                  <p className="text-sm text-valentine-red opacity-75 mb-4">
                     {selectedPronouns === "They/Them" || selectedPronouns === "Other"
                       ? "What gender would you like to be matched with?"
                       : "What is your sexuality?"}
                   </p>
-                  <p className="text-xs italic text-[#374995] opacity-75 mb-3">
+                  <p className="text-xs italic text-valentine-red opacity-75 mb-3">
                     ***Note: We will prioritize your matching preference, however you might not be matched with someone of your selected preference, but you can always make a new friend!
                   </p>
 
@@ -514,19 +514,19 @@ const Page = () => {
                       ? [
                           {
                             value: "3",
-                            icon: <FaUsers className="text-blue-500" />,
+                            icon: <FaUsers className="text-valentine-red" />,
                             label: "Woman",
                             description: "Match me with women!",
                           },
                           {
                             value: "3",
-                            icon: <FaUsers className="text-blue-500" />,
+                            icon: <FaUsers className="text-valentine-red" />,
                             label: "Men",
                             description: "Match me with men!",
                           },
                           {
                             value: "3",
-                            icon: <FaHeart className="text-pink-500" />,
+                            icon: <FaHeart className="text-valentine-pink" />,
                             label: "Any",
                             description: "I'm open to being matched with anyone",
                           },
@@ -534,21 +534,21 @@ const Page = () => {
                       : [
                           {
                             value: "0",
-                            icon: <FaUsers className="text-blue-500" />,
+                            icon: <FaUsers className="text-valentine-red" />,
                             label: "Homosexual",
                             description:
                               "Match me with people who identify with the same gender",
                           },
                           {
                             value: "1",
-                            icon: <FaVenusMars className="text-purple-500" />,
+                            icon: <FaVenusMars className="text-valentine-darkPink" />,
                             label: "Heterosexual",
                             description:
                               "Match me with people who identify with a different gender",
                           },
                           {
                             value: "2",
-                            icon: <FaHeart className="text-pink-500" />,
+                            icon: <FaHeart className="text-valentine-pink" />,
                             label: "Bisexual/Pansexual",
                             description: "I'm open to being matched with anyone",
                           },
@@ -556,22 +556,22 @@ const Page = () => {
                     ).map(({ value, icon, label, description }) => (
                       <label
                         key={label}
-                        className="flex items-start gap-4 p-4 rounded-xl border-2 border-[#e1eaf8] hover:border-[#4b6cb7] hover:bg-[#f8fafc] cursor-pointer transition-all"
+                        className="flex items-start gap-4 p-4 rounded-xl border-2 border-grey1 hover:border-valentine-red/60 hover:bg-valentine-light cursor-pointer transition-all"
                       >
                         <input
                           type="radio"
                           name="intention"
                           value={value}
                           required
-                          className="mt-1 accent-[#4b6cb7] w-5 h-5"
+                          className="mt-1 accent-valentine-pink w-5 h-5"
                         />
                         <div className="flex items-start gap-3 flex-1">
                           <div className="text-2xl mt-0.5">{icon}</div>
                           <div className="flex flex-col">
-                            <span className="text-[#374995] font-semibold">
+                            <span className="text-valentine-red font-semibold">
                               {label}
                             </span>
-                            <span className="text-sm text-[#374995] opacity-60">
+                            <span className="text-sm text-valentine-red opacity-60">
                               {description}
                             </span>
                           </div>
@@ -582,7 +582,7 @@ const Page = () => {
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label className="mb-1 text-[#374995] font-jakarta">
+                  <label className="mb-1 text-valentine-red font-jakarta">
                     Program <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -591,14 +591,14 @@ const Page = () => {
                     placeholder="Enter your program (e.g., Computer Science)"
                     required
                     disabled={hasSubmitted}
-                    className="p-3 rounded-full w-full bg-white text-[#374995] placeholder-[#aabbd7] outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="p-3 rounded-full w-full bg-white text-valentine-red placeholder-grey2 outline-none border border-grey2 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label className="mb-1 text-[#374995] font-jakarta">
+                  <label className="mb-1 text-valentine-red font-jakarta">
                     Year <span className="text-red-500">*</span>{" "}
-                    <span className="text-sm text-[#aabbd7]">
+                    <span className="text-sm text-grey2">
                       (max 2 chars)
                     </span>
                   </label>
@@ -609,21 +609,21 @@ const Page = () => {
                     required
                     maxLength={2}
                     disabled={hasSubmitted}
-                    className="p-3 rounded-full w-full bg-white text-[#374995] placeholder-[#aabbd7] outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="p-3 rounded-full w-full bg-white text-valentine-red placeholder-grey2 outline-none border border-grey2 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
 
                 <div className="flex flex-col w-full">
-                  <label className="mb-1 text-[#374995] font-jakarta">
+                  <label className="mb-1 text-valentine-red font-jakarta">
                     Social Media Links{" "}
-                    <span className="text-sm text-[#aabbd7]">(optional)</span>
+                    <span className="text-sm text-grey2">(optional)</span>
                   </label>
                   <input
                     type="text"
                     name="social_media_links"
                     placeholder="Add your Instagram, Discord, etc."
                     disabled={hasSubmitted}
-                    className="p-3 rounded-full w-full bg-white text-[#374995] placeholder-[#aabbd7] outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="p-3 rounded-full w-full bg-white text-valentine-red placeholder-grey2 outline-none border border-grey2 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -659,7 +659,7 @@ const Page = () => {
                   <div key={index} className="flex flex-col">
                     <label
                       htmlFor={q.name}
-                      className="mb-1 text-[#374995] font-jakarta"
+                      className="mb-1 text-valentine-red font-jakarta"
                     >
                       {q.label}
                     </label>
@@ -671,7 +671,7 @@ const Page = () => {
                         maxLength={500}
                         placeholder="Type your response here..."
                         disabled={hasSubmitted}
-                        className="p-4 rounded-2xl w-full bg-white text-[#374995] placeholder-[#aabbd7] resize-none outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="p-4 rounded-2xl w-full bg-white text-valentine-red placeholder-grey2 resize-none outline-none border border-grey2 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         onChange={(e) => {
                           const charCount = e.target.value.length;
                           const counter =
@@ -685,12 +685,12 @@ const Page = () => {
                                 "char-counter text-red-500 text-xs absolute bottom-2 right-4";
                             } else {
                               counter.className =
-                                "char-counter text-[#aabbd7] text-xs absolute bottom-2 right-4";
+                                "char-counter text-grey2 text-xs absolute bottom-2 right-4";
                             }
                           }
                         }}
                       />
-                      <span className="char-counter text-[#aabbd7] text-xs absolute bottom-2 right-4">
+                      <span className="char-counter text-grey2 text-xs absolute bottom-2 right-4">
                         0/500
                       </span>
                     </div>
@@ -702,7 +702,7 @@ const Page = () => {
               <div className="flex flex-col gap-8 mt-12">
                 {/* Question 1 */}
                 <div>
-                  <p className="text-[#374995] font-jakarta mb-2">
+                  <p className="text-valentine-red font-jakarta mb-2">
                     In class, I...
                   </p>
                   {[
@@ -724,14 +724,14 @@ const Page = () => {
                   ].map(({ value, label }, idx) => (
                     <label
                       key={idx}
-                      className="flex items-center gap-3 mb-2 text-[#374995]"
+                      className="flex items-center gap-3 mb-2 text-valentine-red"
                     >
                       <input
                         type="radio"
                         name="class_seat"
                         value={value}
                         disabled={hasSubmitted}
-                        className="accent-[#4b6cb7] disabled:opacity-50"
+                        className="accent-valentine-pink disabled:opacity-50"
                       />
                       {label}
                     </label>
@@ -740,7 +740,7 @@ const Page = () => {
 
                 {/* Question 2 */}
                 <div>
-                  <p className="text-[#374995] font-jakarta mb-2">
+                  <p className="text-valentine-red font-jakarta mb-2">
                     Pick your favourite evil hobby:
                   </p>
                   {[
@@ -758,14 +758,14 @@ const Page = () => {
                   ].map(({ value, label }, idx) => (
                     <label
                       key={idx}
-                      className="flex items-center gap-3 mb-2 text-[#374995]"
+                      className="flex items-center gap-3 mb-2 text-valentine-red"
                     >
                       <input
                         type="radio"
                         name="evil_hobby"
                         value={value}
                         disabled={hasSubmitted}
-                        className="accent-[#4b6cb7] disabled:opacity-50"
+                        className="accent-valentine-pink disabled:opacity-50"
                       />
                       {label}
                     </label>
@@ -774,7 +774,7 @@ const Page = () => {
 
                 {/* Question 3 */}
                 <div>
-                  <p className="text-[#374995] font-jakarta mb-2">
+                  <p className="text-valentine-red font-jakarta mb-2">
                     I am most likely to...
                   </p>
                   {[
@@ -792,14 +792,14 @@ const Page = () => {
                   ].map(({ value, label }, idx) => (
                     <label
                       key={idx}
-                      className="flex items-center gap-3 mb-2 text-[#374995]"
+                      className="flex items-center gap-3 mb-2 text-valentine-red"
                     >
                       <input
                         type="radio"
                         name="most_likely_to"
                         value={value}
                         disabled={hasSubmitted}
-                        className="accent-[#4b6cb7] disabled:opacity-50"
+                        className="accent-valentine-pink disabled:opacity-50"
                       />
                       {label}
                     </label>
@@ -808,7 +808,7 @@ const Page = () => {
 
                 {/* Question 4 */}
                 <div>
-                  <p className="text-[#374995] font-jakarta mb-2">
+                  <p className="text-valentine-red font-jakarta mb-2">
                     You&apos;re most likely to catch me watching...
                   </p>
                   {[
@@ -830,14 +830,14 @@ const Page = () => {
                   ].map(({ value, label }, idx) => (
                     <label
                       key={idx}
-                      className="flex items-center gap-3 mb-2 text-[#374995]"
+                      className="flex items-center gap-3 mb-2 text-valentine-red"
                     >
                       <input
                         type="radio"
                         name="caught_watching"
                         value={value}
                         disabled={hasSubmitted}
-                        className="accent-[#4b6cb7] disabled:opacity-50"
+                        className="accent-valentine-pink disabled:opacity-50"
                       />
                       {label}
                     </label>
@@ -882,7 +882,7 @@ const Page = () => {
                   sessionState === "form_active" &&
                   !isSubmitting &&
                   !hasSubmitted
-                    ? "bg-[#4b6cb7] hover:bg-[#3f5cb1] text-white cursor-pointer"
+                    ? "bg-valentine-pink hover:bg-valentine-red text-white cursor-pointer"
                     : "bg-gray-400 text-gray-600 cursor-not-allowed"
                 }`}
               >
@@ -902,7 +902,7 @@ const Page = () => {
           {/* Show completion message when already submitted */}
           {hasSubmitted && !isCheckingSubmission && (
             <div className="flex flex-col items-center justify-center text-center gap-6 py-12">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-valentine-red rounded-full flex items-center justify-center">
                 <svg
                   className="w-8 h-8 text-white"
                   fill="none"
@@ -918,10 +918,10 @@ const Page = () => {
                 </svg>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#374995] mb-2">
+                <h2 className="text-2xl font-bold text-valentine-red mb-2">
                   Survey Completed!
                 </h2>
-                <p className="text-[#374995] opacity-75">
+                <p className="text-valentine-red opacity-75">
                   Thank you for participating in Speed Dataing!
                   <br />
                   Your responses have been recorded and will be used for
@@ -931,13 +931,13 @@ const Page = () => {
               <div className="flex gap-4 mt-4">
                 <button
                   onClick={() => (window.location.href = "/dashboard")}
-                  className="bg-[#374995] text-white px-6 py-2 rounded-full hover:bg-[#5989fc] transition-colors"
+                  className="bg-valentine-red text-white px-6 py-2 rounded-full hover:bg-valentine-pink transition-colors"
                 >
                   Back to Dashboard
                 </button>
                 <button
                   onClick={() => (window.location.href = "/history")}
-                  className="bg-[#A6C3EA] text-white px-6 py-2 rounded-full hover:bg-[#8bb3e8] transition-colors"
+                  className="bg-valentine-lightPink text-white px-6 py-2 rounded-full hover:bg-valentine-pink transition-colors"
                 >
                   View Previous Matches
                 </button>

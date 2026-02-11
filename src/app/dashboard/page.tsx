@@ -2,7 +2,7 @@ import React from "react";
 import Dashboard from "./Dashboard";
 import Navbar from "@/app/components/Navbar";
 import Footer from "../components/Footer";
-import Logo from "../../../public/images/logo.svg";
+import Logo from "../../../public/images/logo-valentines-p.svg";
 import Image from "next/image";
 
 export const metadata = {
@@ -12,12 +12,12 @@ export const metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#E6EFFD]">
+    <div className="min-h-screen flex flex-col bg-valentine-light">
       <Navbar />
       <Image
         src={Logo}
         alt="Logo"
-        className="w-3/5 lg:w-2/5 h-auto mx-auto py-8"
+        className="w-2/5 lg:w-1/3 h-auto mx-auto pt-0 pb-0 -mt-2 -mb-3"
       />
       <Dashboard />
       <Footer />

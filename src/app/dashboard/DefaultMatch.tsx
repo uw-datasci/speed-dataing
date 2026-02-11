@@ -39,9 +39,9 @@ const MatchComponent = ({ isViewMatch = false }) => {
   };
 
   return (
-    <div className="w-full min-h-[400px] bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-50 rounded-2xl shadow-lg overflow-hidden">
+    <div className="w-full min-h-[400px] bg-gradient-to-br from-valentine-light via-white to-valentine-lightPink rounded-2xl shadow-lg overflow-hidden">
       {/* Hero Image Section */}
-      <div className="w-full h-48 bg-gradient-to-r from-blue-400 to-blue-600 relative overflow-hidden">
+      <div className="w-full h-48 bg-gradient-to-r from-valentine-pink to-valentine-red relative overflow-hidden">
         <div className={`absolute inset-0 
         ${!isViewMatch ? "bg-[url(https://i.pinimg.com/originals/79/5c/cb/795ccbc6b43baffe39982b297c882f70.gif)]" : 
             "bg-[url(https://i.pinimg.com/originals/ca/3b/ba/ca3bbaf943e160b1296708f3fc01457b.gif)]"
@@ -64,17 +64,17 @@ const MatchComponent = ({ isViewMatch = false }) => {
         {isViewMatch ? (
           <div className="text-center animate-pulse">
             <div className="mb-4">
-              <div className="w-16 h-16 mx-auto bg-gradient-to-r from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-16 h-16 mx-auto bg-gradient-to-r from-valentine-pink to-valentine-red rounded-full flex items-center justify-center shadow-lg">
                 <svg className="w-8 h-8 text-white animate-bounce" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-valentine-pink to-valentine-red bg-clip-text text-transparent mb-2">
               Matching in Session!
             </h2>
-            <p className="text-blue-700 text-lg font-medium">
-              You can now <a href="/match" className='text-blue-900 underline'>view</a> your match!
+            <p className="text-valentine-red text-lg font-medium">
+              You can now <a href="/match" className='text-valentine-darkPink underline'>view</a> your match!
             </p>
           </div>
         ) : (
@@ -83,7 +83,7 @@ const MatchComponent = ({ isViewMatch = false }) => {
             
             
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-3 font-plus-jakarta-sans">
-              Finding your <span className='text-blue-500'>perfect match</span>
+              Finding your <span className='text-valentine-pink'>perfect match</span>
             </h2>
             
             <p className="text-gray-600 text-base sm:text-lg font-medium italic font-plus-jakarta-sans mb-4">
@@ -91,9 +91,9 @@ const MatchComponent = ({ isViewMatch = false }) => {
             </p>
             
             <div className="flex justify-center space-x-1 mb-6">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-2 h-2 bg-valentine-lightPink rounded-full animate-bounce"></div>
+              <div className="w-2 h-2 bg-valentine-pink rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+              <div className="w-2 h-2 bg-valentine-red rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
             </div>
 
             {/* Pickup Line Generator */}
@@ -104,7 +104,7 @@ const MatchComponent = ({ isViewMatch = false }) => {
               </p>
               <button
                 onClick={getRandomPickupLine}
-                className="bg-gradient-to-r from-blue-200 to-blue-300 hover:from-blue-600 hover:to-blue-700 text-black px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md"
+                className="bg-gradient-to-r from-valentine-pink to-valentine-red hover:from-valentine-red hover:to-valentine-darkPink text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-105 shadow-md"
               >
               another one pls :3
               </button>
