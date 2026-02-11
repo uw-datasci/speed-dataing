@@ -1,8 +1,8 @@
 "use client";
 import AuthForm from "@/app/components/AuthForm";
 import Image from "next/image";
-import Footer from "../../public/images/login/footer.png"
-import Header from "../../public/images/login/header.png"
+import Footer from "../../public/images/login/gptheader.png"
+import Header from "../../public/images/login/gptheader.png"
 
 export default function Home() {
   return (
