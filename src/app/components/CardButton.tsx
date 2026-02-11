@@ -24,13 +24,13 @@ export default function CardButton({ onClick, type, disabled = false}: CardButto
   `
 
   const variants: Record<typeof type, string> = {
-    start: disabled ? 'bg-gray-400 text-gray-600' : 'bg-[#A6C3EA] text-white',
-    running: 'bg-[#A6C3EA] text-white',
+    start: disabled ? 'bg-gray-400 text-gray-600' : 'bg-valentine-lightPink text-white',
+    running: 'bg-valentine-lightPink text-white',
     locked: 'bg-[#4B5563] text-white',
-    match: disabled ? 'bg-gray-400 text-gray-600' : 'bg-[#496AC7] text-white justify-between pr-12',
+    match: disabled ? 'bg-gray-400 text-gray-600' : 'bg-valentine-pink text-white justify-between pr-12',
   }
 
-  const icon = <FaRegSmile className={`mr-3 text-7xl sm:text-8xl lg:text-[11rem] ${disabled ? 'text-gray-500' : 'text-[#7CA3DE]'}`}/>
+  const icon = <FaRegSmile className={`mr-3 text-7xl sm:text-8xl lg:text-[11rem] ${disabled ? 'text-gray-500' : 'text-valentine-red'}`}/>
 
   const labels: Record<typeof type, string> = {
     start: disabled ? 'Form\nLocked' : 'start\nsurvey',
@@ -48,7 +48,7 @@ export default function CardButton({ onClick, type, disabled = false}: CardButto
 
   const hoverClasses = disabled 
     ? 'cursor-not-allowed opacity-60' 
-    : 'hover:cursor-pointer hover:border-2 hover:border-[#374895]'
+    : 'hover:cursor-pointer hover:border-2 hover:border-valentine-red'
 
   return (
     <button
