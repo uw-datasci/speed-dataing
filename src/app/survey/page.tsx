@@ -505,6 +505,9 @@ const Page = () => {
                       ? "What gender would you like to be matched with?"
                       : "What is your sexuality?"}
                   </p>
+                  <p className="text-xs italic text-[#374995] opacity-75 mb-3">
+                    ***Note: We will prioritize your matching preference, however you might not be matched with someone of your selected preference, but you can always make a new friend!
+                  </p>
 
                   <div className="flex flex-col gap-3">
                     {(selectedPronouns === "They/Them" || selectedPronouns === "Other"
