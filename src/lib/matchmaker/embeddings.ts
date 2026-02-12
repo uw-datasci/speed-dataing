@@ -56,7 +56,7 @@ const odd_participant: Participant = {
   id: oddId,
   email: "k6guan@uwaterloo.ca",
   name: "Karen Guan",
-  pronouns: "she/her",
+  pronouns: "She/Her",
   program: "CS", // used for vector embedding
   year: "2B", // used for vector embedding
   social_media_links: "https://www.linkedin.com/in/karen-guan-gzy/",
@@ -734,8 +734,8 @@ export async function matchParticipants(): Promise<Match[]> {
   // Helper function to determine gender from pronouns
   function getGender(pronouns: string): "male" | "female" | "other" {
     const p = pronouns.toLowerCase();
-    if (p.includes("he/him") || p.includes("he")) return "male";
-    if (p.includes("she/her") || p.includes("she")) return "female";
+    if (p.includes("he/him")) return "male";
+    if (p.includes("she/her")) return "female";
     return "other";
   }
 
