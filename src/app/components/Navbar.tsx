@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/store/store";
 import { logout } from "@/store/loginTokenSlice";
+import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,32 +65,41 @@ const Navbar = () => {
       </div>
 
       <div className="hidden md:flex items-center gap-6">
-        <Link
-          href="/dashboard"
-          className="text-[#FF5252] cursor-pointer font-semibold hover:bg-[#f5e2e3] font-medium transition font-jakarta"
-        >
-          Dashboard
-        </Link>
-        <Link
-          href="/information"
-          className="text-[#FF5252] cursor-pointer font-semibold hover:bg-[#f5e2e3] font-medium transition font-jakarta"
-        >
-          How it works
-        </Link>
+        <Button variant="ghost">
+          <Link
+            href="/dashboard"
+            className="text-base text-[#FF5252] cursor-pointer font-semibold font-medium font-jakarta"
+          >
+            Dashboard
+          </Link>
+        </Button>
+
+        <Button variant="ghost">
+          <Link
+            href="/information"
+            className="text-base text-[#FF5252] cursor-pointer font-semibold font-medium font-jakarta"
+          >
+            How it works
+          </Link>
+        </Button>
+
         {isAdmin && (
-          <button
+          <Button
+            variant="ghost"
             onClick={handleAdminClick}
-            className="text-[#FF5252] cursor-pointer font-semibold hover:bg-[#f5e2e3] font-medium transition font-jakarta border-2 border-[#FF5252] px-3 py-1 rounded-lg"
+            className="text-base text-[#FF5252] cursor-pointer font-semibold hover:text-[#FF5252] font-medium transition font-jakarta"
           >
             Admin
-          </button>
+          </Button>
         )}
-        <button
+
+        <Button
+          variant="ghost"
           onClick={handleSignOut}
-          className="text-[#FF5252] rounded-xl cursor-pointer font-semibold p-2 hover:bg-[#f5e2e3] transition font-jakarta"
+          className="text-base text-[#FF5252] rounded-xl cursor-pointer font-semibold p-2 hover:text-[#FF5252] transition font-jakarta"
         >
           Log Out
-        </button>
+        </Button>
       </div>
 
       <button

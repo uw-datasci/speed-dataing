@@ -16,6 +16,7 @@ export default {
         'bounce-subtle': 'bounce-subtle 2s ease-in-out infinite',
       },
       fontFamily: {
+        jakarta: ['var(--font-plus-jakarta-sans)', 'sans-serif'],
         'plus-jakarta-sans': ['var(--font-plus-jakarta-sans)', 'sans-serif'],
       },
     },
