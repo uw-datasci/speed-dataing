@@ -11,7 +11,6 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Logo from "../../../public/images/logo.svg";
 import Image from "next/image";
-import Cookies from "js-cookie";
 import axios from "axios";
 import {
   FaUsers,
@@ -56,9 +55,7 @@ interface Pagination {
 
 const AdminPage = () => {
   const router = useRouter();
-  const { name, role } = useSelector((state: RootState) => state.auth);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const name = useSelector((state: RootState) => state.user.data?.name);
   const [stats, setStats] = useState<Stats | null>(null);
   const [responses, setResponses] = useState<FormResponse[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -73,49 +70,13 @@ const AdminPage = () => {
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [runningMatching, setRunningMatching] = useState(false);
 
+  // Access control is enforced server-side by src/app/admin/layout.tsx
+  // (requireAdmin: exec or admin role on the shared uwdatascience.ca session).
   useEffect(() => {
-    const checkAdminAccess = () => {
-      const cookieRole = Cookies.get("role");
-      const reduxRole = role;
-      const adminVerified = Cookies.get("adminVerified");
-
-      console.log("[Admin Page] Checking admin access:", {
-        cookieRole,
-        reduxRole,
-        adminVerified,
-      });
-
-      if (
-        (cookieRole === "admin" || reduxRole === "admin") &&
-        adminVerified === "true"
-      ) {
-        console.log("[Admin Page] Admin access confirmed");
-        setIsAdmin(true);
-        setIsLoading(false);
-        fetchStats();
-        fetchResponses(1, "", "created_at", "desc");
-        fetchSettings();
-      } else if (cookieRole === "admin" || reduxRole === "admin") {
-        console.log(
-          "[Admin Page] Admin not verified, redirecting to verification"
-        );
-        router.push("/admin/verify");
-      } else if (cookieRole && cookieRole !== "admin") {
-        console.log("[Admin Page] User is not admin, redirecting to dashboard");
-        router.push("/dashboard");
-      } else if (!cookieRole && !reduxRole) {
-        console.log("[Admin Page] Still loading authentication state");
-        setTimeout(checkAdminAccess, 500);
-      } else {
-        console.log(
-          "[Admin Page] No authentication found, redirecting to login"
-        );
-        router.push("/");
-      }
-    };
-
-    checkAdminAccess();
-  }, [role, router]);
+    fetchStats();
+    fetchResponses(1, "", "created_at", "desc");
+    fetchSettings();
+  }, []);
 
   const fetchStats = async () => {
     setLoadingStats(true);
@@ -305,9 +266,7 @@ const AdminPage = () => {
   };
 
   const handleAdminLogout = () => {
-    console.log("[Admin Page] Admin logout - clearing verification");
-    Cookies.remove("adminVerified", { path: "/" });
-    router.push("/admin/verify");
+    router.push("/dashboard");
   };
 
   const formatDate = (dateString: string) => {
@@ -328,34 +287,6 @@ const AdminPage = () => {
       <FaSortDown className="text-blue-500" />
     );
   };
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center">
-          <div className="flex space-x-2">
-            <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
-              style={{ animationDelay: "0ms" }}
-            ></div>
-            <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
-              style={{ animationDelay: "150ms" }}
-            ></div>
-            <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
-              style={{ animationDelay: "300ms" }}
-            ></div>
-          </div>
-          <p className="mt-4 text-[#374995] text-lg">Loading admin panel</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#E6EFFD]">
@@ -395,7 +326,7 @@ const AdminPage = () => {
                   onClick={handleAdminLogout}
                   className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm"
                 >
-                  Admin Logout
+                  Exit Admin
                 </button>
               </div>
             </div>

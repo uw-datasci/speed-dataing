@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdminApi } from "@/lib/auth/api";
 import {
   clearCurrMatchesTable,
   updateFormResponsesTableWithVectorEmbeddings,
@@ -141,6 +142,9 @@ function generateUniqueEmojis(matchCount: number): string[] {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAdminApi();
+  if (auth instanceof NextResponse) return auth;
+
   try {
     console.log("[Run Matching API] Starting matching process...");
 

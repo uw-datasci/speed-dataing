@@ -1,30 +1,12 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase";
+import { requireAdminApi } from "@/lib/auth/api";
 
 export async function GET() {
-  const token = (await cookies()).get("token")?.value;
-  const role = (await cookies()).get("role")?.value;
-  const adminVerified = (await cookies()).get("adminVerified")?.value;
-  
-
-  console.log('[Admin Stats API] Checking admin access:', { token: token ? 'present' : 'not found', role, adminVerified });
-
-  // Check admin authentication
-  if (!token) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  }
-
-  if (role !== 'admin') {
-    return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 403 });
-  }
-
-  if (adminVerified !== 'true') {
-    return NextResponse.json({ error: "Admin verification required" }, { status: 403 });
-  }
+  const auth = await requireAdminApi();
+  if (auth instanceof NextResponse) return auth;
 
   try {
     console.log('[Admin Stats API] Fetching statistics from form_responses table...');

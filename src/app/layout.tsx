@@ -2,7 +2,6 @@
 
 import "./globals.css";
 import { store } from "@/store/store";
-import { AuthHydrator } from "@/app/components/AuthHydrator";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Provider } from "react-redux";
 import UserFetcher from "@/app/components/UserFetcher";
@@ -33,7 +32,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} antialiased`}
       >
         <Provider store={store}>
-          <AuthHydrator />
           <UserFetcher />
           {children}
         </Provider>
