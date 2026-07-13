@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import Navbar from "@/app/components/Navbar";
 import Image from "next/image";
-import Logo from "../../../../public/images/logo-valentines-p.svg";
+import ThemedLogo from "@/app/components/ThemedLogo";
 import {
   FaArrowUp,
   FaSync,
@@ -427,7 +427,7 @@ const Page = () => {
           {!hasSubmitted && !isCheckingSubmission && (
             <>
               <div className="flex flex-col items-center justify-center text-center gap-2">
-                <Image src={Logo} alt="Logo" className="w-2/5 h-auto" />
+                <ThemedLogo className="w-2/5 h-auto" />
               </div>
 
               <div className="flex flex-col md:flex-row gap-6 justify-between">

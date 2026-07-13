@@ -11,6 +11,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Logo from "../../../public/images/logo.svg";
 import Image from "next/image";
+import Cookies from "js-cookie";
 import axios from "axios";
 import {
   FaUsers,
@@ -55,7 +56,9 @@ interface Pagination {
 
 const AdminPage = () => {
   const router = useRouter();
-  const name = useSelector((state: RootState) => state.user.data?.name);
+  const { name, role } = useSelector((state: RootState) => state.auth);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
   const [responses, setResponses] = useState<FormResponse[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -69,14 +72,53 @@ const AdminPage = () => {
   const [settings, setSettings] = useState<any[]>([]);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [runningMatching, setRunningMatching] = useState(false);
+  const [siteTheme, setSiteTheme] = useState<"default" | "valentines">("default");
+  const [savingTheme, setSavingTheme] = useState(false);
 
-  // Access control is enforced server-side by src/app/admin/layout.tsx
-  // (requireAdmin: exec or admin role on the shared uwdatascience.ca session).
   useEffect(() => {
-    fetchStats();
-    fetchResponses(1, "", "created_at", "desc");
-    fetchSettings();
-  }, []);
+    const checkAdminAccess = () => {
+      const cookieRole = Cookies.get("role");
+      const reduxRole = role;
+      const adminVerified = Cookies.get("adminVerified");
+
+      console.log("[Admin Page] Checking admin access:", {
+        cookieRole,
+        reduxRole,
+        adminVerified,
+      });
+
+      if (
+        (cookieRole === "admin" || reduxRole === "admin") &&
+        adminVerified === "true"
+      ) {
+        console.log("[Admin Page] Admin access confirmed");
+        setIsAdmin(true);
+        setIsLoading(false);
+        fetchStats();
+        fetchResponses(1, "", "created_at", "desc");
+        fetchSettings();
+        fetchTheme();
+      } else if (cookieRole === "admin" || reduxRole === "admin") {
+        console.log(
+          "[Admin Page] Admin not verified, redirecting to verification"
+        );
+        router.push("/admin/verify");
+      } else if (cookieRole && cookieRole !== "admin") {
+        console.log("[Admin Page] User is not admin, redirecting to dashboard");
+        router.push("/dashboard");
+      } else if (!cookieRole && !reduxRole) {
+        console.log("[Admin Page] Still loading authentication state");
+        setTimeout(checkAdminAccess, 500);
+      } else {
+        console.log(
+          "[Admin Page] No authentication found, redirecting to login"
+        );
+        router.push("/");
+      }
+    };
+
+    checkAdminAccess();
+  }, [role, router]);
 
   const fetchStats = async () => {
     setLoadingStats(true);
@@ -141,6 +183,29 @@ const AdminPage = () => {
       console.error("[Admin Page] Error fetching settings:", error);
     } finally {
       setLoadingSettings(false);
+    }
+  };
+
+  const fetchTheme = async () => {
+    try {
+      const response = await axios.get("/api/theme");
+      setSiteTheme(response.data.theme);
+    } catch (error) {
+      console.error("[Admin Page] Error fetching theme:", error);
+    }
+  };
+
+  const saveTheme = async (theme: "default" | "valentines") => {
+    setSavingTheme(true);
+    try {
+      await axios.put("/api/admin/theme", { theme });
+      setSiteTheme(theme);
+      // Apply immediately in this browser too
+      document.documentElement.setAttribute("data-theme", theme);
+    } catch (error) {
+      console.error("[Admin Page] Error saving theme:", error);
+    } finally {
+      setSavingTheme(false);
     }
   };
 
@@ -266,7 +331,9 @@ const AdminPage = () => {
   };
 
   const handleAdminLogout = () => {
-    router.push("/dashboard");
+    console.log("[Admin Page] Admin logout - clearing verification");
+    Cookies.remove("adminVerified", { path: "/" });
+    router.push("/admin/verify");
   };
 
   const formatDate = (dateString: string) => {
@@ -287,6 +354,34 @@ const AdminPage = () => {
       <FaSortDown className="text-blue-500" />
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center">
+          <div className="flex space-x-2">
+            <div
+              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></div>
+          </div>
+          <p className="mt-4 text-[#374995] text-lg">Loading admin panel</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#E6EFFD]">
@@ -326,7 +421,7 @@ const AdminPage = () => {
                   onClick={handleAdminLogout}
                   className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm"
                 >
-                  Exit Admin
+                  Admin Logout
                 </button>
               </div>
             </div>
@@ -566,6 +661,41 @@ const AdminPage = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Theme Control */}
+              <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-[#374995]">
+                <h3 className="text-xl font-semibold text-[#374995] mb-4">Site Theme</h3>
+                <p className="text-sm text-gray-600 mb-5">
+                  Applies to all users immediately.
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => saveTheme("default")}
+                    disabled={savingTheme}
+                    className={`flex-1 py-4 rounded-xl border-2 font-semibold transition-all ${
+                      siteTheme === "default"
+                        ? "border-[#374995] bg-[#E6EFFD] text-[#374995]"
+                        : "border-gray-200 text-gray-500 hover:border-[#374995]"
+                    }`}
+                  >
+                    💙 Default (Blue)
+                  </button>
+                  <button
+                    onClick={() => saveTheme("valentines")}
+                    disabled={savingTheme}
+                    className={`flex-1 py-4 rounded-xl border-2 font-semibold transition-all ${
+                      siteTheme === "valentines"
+                        ? "border-[#FF1744] bg-[#FFE9EE] text-[#FF1744]"
+                        : "border-gray-200 text-gray-500 hover:border-[#FF1744]"
+                    }`}
+                  >
+                    ❤️ Valentine&apos;s (Red/Pink)
+                  </button>
+                </div>
+                {savingTheme && (
+                  <p className="text-sm text-gray-500 mt-3 text-center">Saving…</p>
+                )}
               </div>
             </div>
           )}

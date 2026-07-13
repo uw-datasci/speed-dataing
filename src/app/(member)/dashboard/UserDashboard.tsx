@@ -92,7 +92,7 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="w-screen p-6 lg:p-16 bg-[#f5e2e3] rounded-t-4xl">
+    <div className="w-screen p-6 lg:p-16 bg-valentine-light rounded-t-4xl">
       <header>
         <h1 className="text-xl text-center font-semibold py-5 lg:text-6xl mt-1 text-valentine-pink lg:pb-3 px-8">
           Ready to meet the <span className="text-valentine-red">match</span> of your
