@@ -10,17 +10,13 @@ import { FaRegSmileWink } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useTheme } from "@/app/ThemeContext";
-
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/store/store";
-import { logout } from "@/store/loginTokenSlice";
+import axios from "axios";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { role } = useSelector((state: RootState) => state.auth);
+  const user = useSelector((state: RootState) => state.user.data);
   const { theme } = useTheme();
   const Logo = theme === "valentines" ? ValentinesLogo : DefaultLogo;
 
@@ -28,26 +24,20 @@ const Navbar = () => {
     router.push("/dashboard");
   };
 
-  const handleSignOut = () => {
-    console.log("[Sign Out] User signed out");
-    dispatch(logout());
-    router.push("/");
+  const handleSignOut = async () => {
+    try {
+      await axios.post("/api/auth/signout");
+    } catch (e) {
+      console.error("[Sign Out] Failed to clear session", e);
+    }
+    window.location.href = "/";
   };
 
   const handleAdminClick = () => {
-    // Check if admin is already verified
-    const adminVerified = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("adminVerified="))
-      ?.split("=")[1];
-    if (adminVerified === "true") {
-      router.push("/admin");
-    } else {
-      router.push("/admin/verify");
-    }
+    router.push("/admin");
   };
 
-  const isAdmin = role === "admin";
+  const isAdmin = user?.isAdmin ?? false;
 
   return (
     <nav className="sticky no-scrollbar overflow-hidden z-70 top-0 w-full flex items-center justify-between px-6 py-6 bg-white shadow-sm relative z-20 rounded-b-2xl font-jakarta">
