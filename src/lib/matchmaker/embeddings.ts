@@ -8,7 +8,7 @@ import { getMCAnswer } from "./multipleChoiceMap"; // multiple choice answers
 dotenv.config();
 
 const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPEN_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 interface Participant {

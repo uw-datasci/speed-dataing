@@ -28,7 +28,7 @@ export const authConfig = {
     return process.env.AUTH_COOKIE_DOMAIN?.trim() || undefined;
   },
   get mainSiteUrl() {
-    return requireEnv("NEXT_PUBLIC_MAIN_SITE_URL");
+    return requireEnv("MAIN_SITE_URL");
   },
 };
 
