@@ -68,6 +68,8 @@ const AdminPage = () => {
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [runningMatching, setRunningMatching] = useState(false);
   const [siteTheme, setSiteTheme] = useState<"default" | "valentines">("default");
+  const [pendingTheme, setPendingTheme] = useState<"default" | "valentines">("default");
+  const [editingTheme, setEditingTheme] = useState(false);
   const [savingTheme, setSavingTheme] = useState(false);
 
   useEffect(() => {
@@ -93,7 +95,7 @@ const AdminPage = () => {
     page = 1,
     search = searchTerm,
     sort = sortBy,
-    order = sortOrder
+    order = sortOrder,
   ) => {
     setLoadingResponses(true);
     try {
@@ -146,19 +148,37 @@ const AdminPage = () => {
   const fetchTheme = async () => {
     try {
       const response = await axios.get("/api/theme");
-      setSiteTheme(response.data.theme);
+      const theme = response.data.theme as "default" | "valentines";
+      setSiteTheme(theme);
+      setPendingTheme(theme);
     } catch (error) {
       console.error("[Admin Page] Error fetching theme:", error);
     }
   };
 
-  const saveTheme = async (theme: "default" | "valentines") => {
+  const startEditingTheme = () => {
+    setPendingTheme(siteTheme);
+    setEditingTheme(true);
+  };
+
+  const cancelEditingTheme = () => {
+    setPendingTheme(siteTheme);
+    setEditingTheme(false);
+  };
+
+  const confirmTheme = async () => {
+    if (pendingTheme === siteTheme) {
+      setEditingTheme(false);
+      return;
+    }
+
     setSavingTheme(true);
     try {
-      await axios.put("/api/admin/theme", { theme });
-      setSiteTheme(theme);
+      await axios.put("/api/admin/theme", { theme: pendingTheme });
+      setSiteTheme(pendingTheme);
       // Apply immediately in this browser too
-      document.documentElement.setAttribute("data-theme", theme);
+      document.documentElement.setAttribute("data-theme", pendingTheme);
+      setEditingTheme(false);
     } catch (error) {
       console.error("[Admin Page] Error saving theme:", error);
     } finally {
@@ -175,10 +195,7 @@ const AdminPage = () => {
       if (response.data.success) {
         // refresh settings from the database to get the latest state
         await fetchSettings();
-        console.log(
-          "[Admin Page] Action executed successfully:",
-          response.data
-        );
+        console.log("[Admin Page] Action executed successfully:", response.data);
       }
     } catch (error) {
       console.error("[Admin Page] Error executing action:", error);
@@ -193,26 +210,16 @@ const AdminPage = () => {
       const response = await axios.post("/api/admin/run-matching");
 
       if (response.data.success) {
-        console.log(
-          "[Admin Page] Matching completed successfully:",
-          response.data
-        );
-        alert(
-          `Matching completed! Generated ${response.data.matchCount} matches.`
-        );
+        console.log("[Admin Page] Matching completed successfully:", response.data);
+        alert(`Matching completed! Generated ${response.data.matchCount} matches.`);
       } else {
-        console.log(
-          "[Admin Page] Matching completed with message:",
-          response.data.message
-        );
+        console.log("[Admin Page] Matching completed with message:", response.data.message);
         alert(response.data.message || "Matching completed");
       }
     } catch (error: any) {
       console.error("[Admin Page] Error running matching algorithm:", error);
       alert(
-        `Error running matching algorithm: ${
-          error.response?.data?.error || error.message
-        }`
+        `Error running matching algorithm: ${error.response?.data?.error || error.message}`,
       );
     } finally {
       setRunningMatching(false);
@@ -309,11 +316,7 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#E6EFFD]">
       <Navbar />
-      <Image
-        src={Logo}
-        alt="Logo"
-        className="w-3/5 lg:w-2/5 h-auto mx-auto py-8"
-      />
+      <Image src={Logo} alt="Logo" className="w-3/5 lg:w-2/5 h-auto mx-auto py-8" />
 
       <main className="flex-1 p-6 lg:p-16">
         <div className="max-w-7xl mx-auto">
@@ -325,9 +328,8 @@ const AdminPage = () => {
                   Admin Dashboard
                 </h1>
                 <p className="text-lg text-gray-600">
-                  Welcome,{" "}
-                  <span className="font-semibold text-[#374995]">{name}</span>!
-                  Monitor your application data in real-time.
+                  Welcome, <span className="font-semibold text-[#374995]">{name}</span>! Monitor
+                  your application data in real-time.
                 </p>
               </div>
               <div className="flex gap-3">
@@ -389,9 +391,7 @@ const AdminPage = () => {
                       <FaClipboardList className="text-[#374995] text-xl" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Responses
-                      </p>
+                      <p className="text-sm font-medium text-gray-600">Total Responses</p>
                       <p className="text-2xl font-bold text-[#374995]">
                         {loadingStats ? "..." : stats?.totalResponses || 0}
                       </p>
@@ -405,9 +405,7 @@ const AdminPage = () => {
                       <FaUsers className="text-[#374995] text-xl" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">
-                        Unique Users
-                      </p>
+                      <p className="text-sm font-medium text-gray-600">Unique Users</p>
                       <p className="text-2xl font-bold text-[#374995]">
                         {loadingStats ? "..." : stats?.uniqueUsers || 0}
                       </p>
@@ -421,9 +419,7 @@ const AdminPage = () => {
                       <FaChartLine className="text-[#374995] text-xl" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">
-                        This Week
-                      </p>
+                      <p className="text-sm font-medium text-gray-600">This Week</p>
                       <p className="text-2xl font-bold text-[#374995]">
                         {loadingStats ? "..." : stats?.weeklyResponses || 0}
                       </p>
@@ -441,8 +437,7 @@ const AdminPage = () => {
                       <p className="text-2xl font-bold text-[#374995]">
                         {loadingStats
                           ? "..."
-                          : stats?.dailyStats?.[stats.dailyStats.length - 1]
-                              ?.count || 0}
+                          : stats?.dailyStats?.[stats.dailyStats.length - 1]?.count || 0}
                       </p>
                     </div>
                   </div>
@@ -452,9 +447,7 @@ const AdminPage = () => {
               {/* Session Controls */}
               <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-[#374995]">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-xl font-semibold text-[#374995]">
-                    Session Controls
-                  </h3>
+                  <h3 className="text-xl font-semibold text-[#374995]">Session Controls</h3>
                   <button
                     onClick={fetchSettings}
                     disabled={loadingSettings}
@@ -477,9 +470,7 @@ const AdminPage = () => {
                       </p>
                     </div>
                     <div
-                      className={`w-4 h-4 rounded-full bg-${
-                        getSessionStateInfo().color
-                      }-500`}
+                      className={`w-4 h-4 rounded-full bg-${getSessionStateInfo().color}-500`}
                     ></div>
                   </div>
                 </div>
@@ -487,9 +478,7 @@ const AdminPage = () => {
                 {/* Next Action Button */}
                 <div className="flex justify-center">
                   <button
-                    onClick={() =>
-                      toggleSetting(getSessionStateInfo().nextAction)
-                    }
+                    onClick={() => toggleSetting(getSessionStateInfo().nextAction)}
                     disabled={loadingSettings}
                     className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                       loadingSettings
@@ -497,9 +486,7 @@ const AdminPage = () => {
                         : "bg-[#374995] hover:bg-[#5989fc] text-white cursor-pointer"
                     } disabled:opacity-50`}
                   >
-                    {loadingSettings
-                      ? "Processing..."
-                      : getSessionStateInfo().nextActionText}
+                    {loadingSettings ? "Processing..." : getSessionStateInfo().nextActionText}
                   </button>
                 </div>
 
@@ -532,15 +519,11 @@ const AdminPage = () => {
 
                 {/* State Flow Indicator */}
                 <div className="mt-6">
-                  <h4 className="font-medium text-gray-900 mb-3">
-                    Session Flow:
-                  </h4>
+                  <h4 className="font-medium text-gray-900 mb-3">Session Flow:</h4>
                   <div className="flex items-center justify-between text-sm">
                     <div
                       className={`px-3 py-1 rounded ${
-                        getSessionState() === "idle"
-                          ? "bg-gray-200"
-                          : "bg-gray-100"
+                        getSessionState() === "idle" ? "bg-gray-200" : "bg-gray-100"
                       }`}
                     >
                       Idle
@@ -548,9 +531,7 @@ const AdminPage = () => {
                     <div className="text-gray-400">→</div>
                     <div
                       className={`px-3 py-1 rounded ${
-                        getSessionState() === "form_active"
-                          ? "bg-green-200"
-                          : "bg-gray-100"
+                        getSessionState() === "form_active" ? "bg-green-200" : "bg-gray-100"
                       }`}
                     >
                       Form Active
@@ -568,9 +549,7 @@ const AdminPage = () => {
                     <div className="text-gray-400">→</div>
                     <div
                       className={`px-3 py-1 rounded ${
-                        getSessionState() === "matches_released"
-                          ? "bg-blue-200"
-                          : "bg-gray-100"
+                        getSessionState() === "matches_released" ? "bg-blue-200" : "bg-gray-100"
                       }`}
                     >
                       Released
@@ -580,37 +559,73 @@ const AdminPage = () => {
               </div>
 
               {/* Theme Control */}
-              <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-[#374995]">
-                <h3 className="text-xl font-semibold text-[#374995] mb-4">Site Theme</h3>
-                <p className="text-sm text-gray-600 mb-5">
-                  Applies to all users immediately.
-                </p>
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => saveTheme("default")}
-                    disabled={savingTheme}
-                    className={`flex-1 py-4 rounded-xl border-2 font-semibold transition-all ${
-                      siteTheme === "default"
-                        ? "border-[#374995] bg-[#E6EFFD] text-[#374995]"
-                        : "border-gray-200 text-gray-500 hover:border-[#374995]"
-                    }`}
-                  >
-                    💙 Default (Blue)
-                  </button>
-                  <button
-                    onClick={() => saveTheme("valentines")}
-                    disabled={savingTheme}
-                    className={`flex-1 py-4 rounded-xl border-2 font-semibold transition-all ${
-                      siteTheme === "valentines"
-                        ? "border-[#FF1744] bg-[#FFE9EE] text-[#FF1744]"
-                        : "border-gray-200 text-gray-500 hover:border-[#FF1744]"
-                    }`}
-                  >
-                    ❤️ Valentine&apos;s (Red/Pink)
-                  </button>
+              <div className="relative bg-white rounded-lg shadow-lg p-6 border-2 border-[#374995] overflow-hidden">
+                <div
+                  className={`transition-all ${
+                    editingTheme ? "" : "blur-sm pointer-events-none select-none"
+                  }`}
+                >
+                  <h3 className="text-xl font-semibold text-[#374995] mb-4">Site Theme</h3>
+                  <p className="text-sm text-gray-600 mb-5">
+                    Applies to all users immediately.
+                  </p>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPendingTheme("default")}
+                      disabled={!editingTheme || savingTheme}
+                      className={`flex-1 py-4 rounded-xl border-2 font-semibold transition-all ${
+                        pendingTheme === "default"
+                          ? "border-[#374995] bg-[#E6EFFD] text-[#374995]"
+                          : "border-gray-200 text-gray-500 hover:border-[#374995]"
+                      }`}
+                    >
+                      💙 Default (Blue)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPendingTheme("valentines")}
+                      disabled={!editingTheme || savingTheme}
+                      className={`flex-1 py-4 rounded-xl border-2 font-semibold transition-all ${
+                        pendingTheme === "valentines"
+                          ? "border-[#FF1744] bg-[#FFE9EE] text-[#FF1744]"
+                          : "border-gray-200 text-gray-500 hover:border-[#FF1744]"
+                      }`}
+                    >
+                      ❤️ Valentine&apos;s (Red/Pink)
+                    </button>
+                  </div>
+                  {editingTheme && (
+                    <div className="flex gap-3 mt-5">
+                      <button
+                        type="button"
+                        onClick={confirmTheme}
+                        disabled={savingTheme}
+                        className="flex-1 bg-[#374995] text-white py-2.5 rounded-lg font-medium hover:bg-[#5989fc] transition-colors disabled:opacity-50"
+                      >
+                        {savingTheme ? "Saving…" : "Confirm"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditingTheme}
+                        disabled={savingTheme}
+                        className="flex-1 bg-gray-500 text-white py-2.5 rounded-lg font-medium hover:bg-gray-600 transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {savingTheme && (
-                  <p className="text-sm text-gray-500 mt-3 text-center">Saving…</p>
+                {!editingTheme && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/40">
+                    <button
+                      type="button"
+                      onClick={startEditingTheme}
+                      className="bg-[#374995] text-white px-6 py-2.5 rounded-lg font-medium hover:bg-[#5989fc] transition-colors shadow-md"
+                    >
+                      Edit Theme
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -727,10 +742,7 @@ const AdminPage = () => {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {responses.map((response, index) => (
-                            <tr
-                              key={response.id || index}
-                              className="hover:bg-gray-50"
-                            >
+                            <tr key={response.id || index} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {response.id || "N/A"}
                               </td>
@@ -750,10 +762,7 @@ const AdminPage = () => {
                                 <button
                                   className="text-[#374995] hover:text-[#5989fc] mr-3"
                                   onClick={() => {
-                                    console.log(
-                                      "View response details:",
-                                      response
-                                    );
+                                    console.log("View response details:", response);
                                     // You can add a modal or expandable row here
                                   }}
                                 >
@@ -762,10 +771,7 @@ const AdminPage = () => {
                                 <button
                                   className="text-red-500 hover:text-red-700"
                                   onClick={() => {
-                                    console.log(
-                                      "Delete response:",
-                                      response.id
-                                    );
+                                    console.log("Delete response:", response.id);
                                     // Add delete functionality here
                                   }}
                                 >
@@ -783,34 +789,26 @@ const AdminPage = () => {
                       <div className="px-6 py-4 border-t border-gray-200">
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-gray-700">
-                            Showing{" "}
-                            {(pagination.currentPage - 1) * pagination.limit +
-                              1}{" "}
-                            to{" "}
+                            Showing {(pagination.currentPage - 1) * pagination.limit + 1} to{" "}
                             {Math.min(
                               pagination.currentPage * pagination.limit,
-                              pagination.totalCount
+                              pagination.totalCount,
                             )}{" "}
                             of {pagination.totalCount} results
                           </div>
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() =>
-                                handlePageChange(pagination.currentPage - 1)
-                              }
+                              onClick={() => handlePageChange(pagination.currentPage - 1)}
                               disabled={!pagination.hasPrev}
                               className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                             >
                               Previous
                             </button>
                             <span className="px-3 py-1 text-sm">
-                              Page {pagination.currentPage} of{" "}
-                              {pagination.totalPages}
+                              Page {pagination.currentPage} of {pagination.totalPages}
                             </span>
                             <button
-                              onClick={() =>
-                                handlePageChange(pagination.currentPage + 1)
-                              }
+                              onClick={() => handlePageChange(pagination.currentPage + 1)}
                               disabled={!pagination.hasNext}
                               className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                             >
