@@ -6,6 +6,7 @@ import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Provider } from "react-redux";
 import { ThemeProvider } from "@/app/ThemeContext";
 import UserFetcher from "@/app/components/UserFetcher";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -38,6 +39,7 @@ export default function RootLayout({
             {children}
           </ThemeProvider>
         </Provider>
+        <Analytics />
       </body>
     </html>
   );
