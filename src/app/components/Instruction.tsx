@@ -24,7 +24,7 @@ export default function InstructionPage() {
   <section>
     {/*mobile view*/}
     {showBg ? (
-    <div className="w-full bg-[#E6EFFD] flex flex-col items-center pb-30 sm:pb-40 md:pb-45"> {/*FIXXX*/}
+    <div className="w-full bg-valentine-light flex flex-col items-center pb-30 sm:pb-40 md:pb-45"> {/*FIXXX*/}
       <div id="infoMobile" className="relative w-[90%] max-w-6xl aspect-[2/3] rounded-[50px] mx-auto">
         <Image
           src={fancyText}
@@ -94,7 +94,7 @@ export default function InstructionPage() {
       </div>
     </div>
     ) : ( 
-    <div id="info" className="w-full bg-[#E6EFFD] flex flex-col items-center"> {/*desktop view*/}
+    <div id="info" className="w-full bg-valentine-light flex flex-col items-center"> {/*desktop view*/}
       <Image
         src={fancyText}
         alt="How to participate?"

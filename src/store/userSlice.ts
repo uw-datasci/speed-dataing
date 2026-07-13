@@ -22,6 +22,7 @@ export interface UserData {
   isMathSocMember?: boolean;
   id?: string;
   role?: string;
+  isAdmin?: boolean;
 }
 
 interface UserState {

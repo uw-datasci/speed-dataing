@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireSessionApi } from "@/lib/auth/api";
 
-export async function GET(request: Request) {
+export async function GET() {
+  const auth = await requireSessionApi();
+  if (auth instanceof NextResponse) return auth;
+
   try {
-    const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
+    const email = auth.email;
 
     if (!email) {
-      return NextResponse.json({ error: "Email parameter is required" }, { status: 400 });
+      return NextResponse.json({ error: "Your account has no email address" }, { status: 400 });
     }
 
     console.log('[Form Submit Check API] Checking for existing submission:', email);
