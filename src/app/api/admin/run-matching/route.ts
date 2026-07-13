@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
     const { data: settings, error: settingsError } = await supabase
       .from("settings")
       .select("value")
+      .eq("key", "session_state")
       .single();
 
     if (settingsError) {

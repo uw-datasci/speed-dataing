@@ -4,7 +4,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireAdminApi } from "@/lib/auth/api";
-import { exec } from "child_process";
 
 export async function GET() {
   const auth = await requireAdminApi();
@@ -46,7 +45,6 @@ export async function PUT(request: Request) {
     }
 
     let newState: string;
-    let shouldRunMatching = false;
 
     // Define the state transitions
     switch (action) {
@@ -54,8 +52,11 @@ export async function PUT(request: Request) {
         newState = 'form_active';
         break;
       case 'start_matching':
+        // Only lock the form / set state here. Matching runs via
+        // POST /api/admin/run-matching (see admin "Run Matching Algorithm").
+        // Spawning `node src/lib/matchmaker/match.ts` fails on Vercel — .ts
+        // sources are not in the serverless bundle.
         newState = 'matching_in_progress';
-        shouldRunMatching = true;
         break;
       case 'release_matches':
         newState = 'matches_released';
@@ -85,27 +86,6 @@ export async function PUT(request: Request) {
 
     console.log('[Admin Settings API] Session state updated successfully:', data);
 
-    // If we need to run the matching algorithm
-    if (shouldRunMatching) {
-      try {
-        console.log('[Admin Settings API] Triggering matching algorithm...');
-        // Import and run the matching algorithm
-        
-        exec('node src/lib/matchmaker/match.ts', { 
-          cwd: process.cwd() 
-        }, (error: Error | null, stdout: string, stderr: string) => {
-          if (error) {
-            console.error('[Admin Settings API] Matching algorithm error:', error);
-          } else {
-            console.log('[Admin Settings API] Matching algorithm completed:', stdout);
-          }
-        });
-      } catch (matchingError) {
-        console.error('[Admin Settings API] Error triggering matching:', matchingError);
-        // Don't fail the request if matching fails
-      }
-    }
-
     return NextResponse.json({ 
       success: true, 
       setting: data?.[0],
@@ -116,4 +96,4 @@ export async function PUT(request: Request) {
     console.error('[Admin Settings API] Unexpected error:', error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-} 
+}
