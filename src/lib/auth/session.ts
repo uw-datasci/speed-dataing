@@ -5,7 +5,7 @@ import { authConfig } from "./config";
 import { createAuthServerClient } from "./supabase-server";
 
 /** Roles from the main site that may access admin pages/APIs. */
-export const ADMIN_ROLES = new Set(["admin", "exec"]);
+export const ADMIN_ROLES = new Set(["admin"]);
 
 export interface AuthenticatedUser {
   id: string;
@@ -50,7 +50,7 @@ export async function requireSession(
 }
 
 /**
- * Like requireSession but additionally requires an exec or admin role.
+ * Like requireSession but additionally requires the admin role.
  * Redirects to /unauthorized otherwise.
  */
 export async function requireAdmin(

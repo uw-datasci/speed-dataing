@@ -20,7 +20,7 @@ export async function requireSessionApi(): Promise<
   return user;
 }
 
-/** Like requireSessionApi but returns 403 unless the role is exec or admin. */
+/** Like requireSessionApi but returns 403 unless the role is admin. */
 export async function requireAdminApi(): Promise<
   AuthenticatedUser | NextResponse
 > {
