@@ -1,14 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
 import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import Logo from "../../../../public/images/logo.svg";
 import Image from "next/image";
-import Cookies from "js-cookie";
 import axios from "axios";
 import { FaSync, FaArrowLeft } from "react-icons/fa";
 
@@ -39,56 +36,15 @@ interface Match {
 
 const AllMatchesPage = () => {
   const router = useRouter();
-  const { role } = useSelector((state: RootState) => state.auth);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Access control is enforced server-side by src/app/admin/layout.tsx.
   useEffect(() => {
-    const checkAdminAccess = () => {
-      const cookieRole = Cookies.get("role");
-      const reduxRole = role;
-      const adminVerified = Cookies.get("adminVerified");
-
-      console.log("[All Matches Page] Checking admin access:", {
-        cookieRole,
-        reduxRole,
-        adminVerified,
-      });
-
-      if (
-        (cookieRole === "admin" || reduxRole === "admin") &&
-        adminVerified === "true"
-      ) {
-        console.log("[All Matches Page] Admin access confirmed");
-        setIsAdmin(true);
-        setIsLoading(false);
-        fetchAllMatches();
-      } else if (cookieRole === "admin" || reduxRole === "admin") {
-        console.log(
-          "[All Matches Page] Admin not verified, redirecting to verification"
-        );
-        router.push("/admin/verify");
-      } else if (cookieRole && cookieRole !== "admin") {
-        console.log(
-          "[All Matches Page] User is not admin, redirecting to dashboard"
-        );
-        router.push("/dashboard");
-      } else if (!cookieRole && !reduxRole) {
-        console.log("[All Matches Page] Still loading authentication state");
-        setTimeout(checkAdminAccess, 500);
-      } else {
-        console.log(
-          "[All Matches Page] No authentication found, redirecting to login"
-        );
-        router.push("/");
-      }
-    };
-
-    checkAdminAccess();
-  }, [role, router]);
+    fetchAllMatches();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchAllMatches = async () => {
     setLoadingMatches(true);
@@ -122,34 +78,6 @@ const AllMatchesPage = () => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center">
-          <div className="flex space-x-2">
-            <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
-              style={{ animationDelay: "0ms" }}
-            ></div>
-            <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
-              style={{ animationDelay: "150ms" }}
-            ></div>
-            <div
-              className="w-3 h-3 bg-[#374995] rounded-full animate-bounce"
-              style={{ animationDelay: "300ms" }}
-            ></div>
-          </div>
-          <p className="mt-4 text-[#374995] text-lg">Loading matches...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#E6EFFD]">

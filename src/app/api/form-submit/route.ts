@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireSessionApi } from "@/lib/auth/api";
 
 export async function POST(request: Request) {
+  const auth = await requireSessionApi();
+  if (auth instanceof NextResponse) return auth;
+  if (!auth.email) {
+    return NextResponse.json(
+      { error: "Your account has no email address" },
+      { status: 400 },
+    );
+  }
+
   try {
     console.log("[Form Submit API] Processing form submission...");
 
@@ -37,8 +47,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get form data
+    // Get form data; the email always comes from the authenticated session,
+    // never from the client payload.
     const formData = await request.json();
+    formData.email = auth.email;
     console.log("[Form Submit API] Form data received:", formData);
 
     // Validate required fields

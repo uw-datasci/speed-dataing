@@ -1,10 +1,12 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { requireAdminApi } from "@/lib/auth/api";
 
 export async function POST() {
+  const auth = await requireAdminApi();
+  if (auth instanceof NextResponse) return auth;
+
   try {
     console.log('[Init Settings API] Initializing settings table...');
 

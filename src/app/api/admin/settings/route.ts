@@ -2,29 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase";
-import { exec } from "child_process";
+import { requireAdminApi } from "@/lib/auth/api";
 
 export async function GET() {
-  const token = (await cookies()).get("token")?.value;
-  const role = (await cookies()).get("role")?.value;
-  const adminVerified = (await cookies()).get("adminVerified")?.value;
-
-  console.log('[Admin Settings API] Checking admin access for GET:', { token: token ? 'present' : 'not found', role, adminVerified });
-
-  // Check admin authentication
-  if (!token) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  }
-
-  if (role !== 'admin') {
-    return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 403 });
-  }
-
-  if (adminVerified !== 'true') {
-    return NextResponse.json({ error: "Admin verification required" }, { status: 403 });
-  }
+  const auth = await requireAdminApi();
+  if (auth instanceof NextResponse) return auth;
 
   try {
     console.log('[Admin Settings API] Fetching session state...');
@@ -49,24 +32,8 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const token = (await cookies()).get("token")?.value;
-  const role = (await cookies()).get("role")?.value;
-  const adminVerified = (await cookies()).get("adminVerified")?.value;
-
-  console.log('[Admin Settings API] Checking admin access for PUT:', { token: token ? 'present' : 'not found', role, adminVerified });
-
-  // Check admin authentication
-  if (!token) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  }
-
-  if (role !== 'admin') {
-    return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 403 });
-  }
-
-  if (adminVerified !== 'true') {
-    return NextResponse.json({ error: "Admin verification required" }, { status: 403 });
-  }
+  const auth = await requireAdminApi();
+  if (auth instanceof NextResponse) return auth;
 
   try {
     const { action } = await request.json();
@@ -78,7 +45,6 @@ export async function PUT(request: Request) {
     }
 
     let newState: string;
-    let shouldRunMatching = false;
 
     // Define the state transitions
     switch (action) {
@@ -86,8 +52,11 @@ export async function PUT(request: Request) {
         newState = 'form_active';
         break;
       case 'start_matching':
+        // Only lock the form / set state here. Matching runs via
+        // POST /api/admin/run-matching (see admin "Run Matching Algorithm").
+        // Spawning `node src/lib/matchmaker/match.ts` fails on Vercel — .ts
+        // sources are not in the serverless bundle.
         newState = 'matching_in_progress';
-        shouldRunMatching = true;
         break;
       case 'release_matches':
         newState = 'matches_released';
@@ -117,27 +86,6 @@ export async function PUT(request: Request) {
 
     console.log('[Admin Settings API] Session state updated successfully:', data);
 
-    // If we need to run the matching algorithm
-    if (shouldRunMatching) {
-      try {
-        console.log('[Admin Settings API] Triggering matching algorithm...');
-        // Import and run the matching algorithm
-        
-        exec('node src/lib/matchmaker/match.ts', { 
-          cwd: process.cwd() 
-        }, (error: Error | null, stdout: string, stderr: string) => {
-          if (error) {
-            console.error('[Admin Settings API] Matching algorithm error:', error);
-          } else {
-            console.log('[Admin Settings API] Matching algorithm completed:', stdout);
-          }
-        });
-      } catch (matchingError) {
-        console.error('[Admin Settings API] Error triggering matching:', matchingError);
-        // Don't fail the request if matching fails
-      }
-    }
-
     return NextResponse.json({ 
       success: true, 
       setting: data?.[0],
@@ -148,4 +96,4 @@ export async function PUT(request: Request) {
     console.error('[Admin Settings API] Unexpected error:', error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-} 
+}

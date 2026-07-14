@@ -1,32 +1,17 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import axios from 'axios';
+import { requireSessionApi } from '@/lib/auth/api';
 
-export async function GET(request: NextRequest) {
-  const token = (await cookies()).get("token")?.value;
-  
-  if (!token) {
-    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
-  }
+export async function GET() {
+  const auth = await requireSessionApi();
+  if (auth instanceof NextResponse) return auth;
 
   try {
     console.log('[User Match API] Fetching user match...');
 
-    // Get user email from external API using token
-    const { data: userData } = await axios.get(
-      `${process.env.NEXT_PUBLIC_UWDSC_WEBSITE_SERVER_URL}/api/users/user`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 4000,
-      }
-    );
-
-    const userEmail = userData.email;
-    console.log('[User Match API] User email from external API:', userEmail);
+    const userEmail = auth.email;
+    console.log('[User Match API] User email from session:', userEmail);
 
     // Find the user's form response ID (UUID)
     const { data: userFormData, error: userError } = await supabase

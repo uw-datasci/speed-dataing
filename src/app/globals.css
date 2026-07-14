@@ -2,9 +2,33 @@
 @import "tailwindcss";
 @source "./src/**/*.{js,ts,jsx,tsx,mdx}";
 
-:root {
+/* ── Default (blue) theme ── */
+:root,
+[data-theme="default"] {
   --background: #ffffff;
   --foreground: #111111;
+  --color-valentine-red: #374995;
+  --color-valentine-lightRed: #496AC7;
+  --color-valentine-pink: #5989fc;
+  --color-valentine-lightPink: #A6C3EA;
+  --color-valentine-darkPink: #374895;
+  --color-valentine-light: #E6EFFD;
+  --color-theme-surface: #e1eaf8;
+  --color-theme-page-bg: #F0F4FF;
+}
+
+/* ── Valentine's (red/pink) theme ── */
+[data-theme="valentines"] {
+  --background: #ffffff;
+  --foreground: #111111;
+  --color-valentine-red: #FF1744;
+  --color-valentine-lightRed: #FF5252;
+  --color-valentine-pink: #FF4081;
+  --color-valentine-lightPink: #FF80AB;
+  --color-valentine-darkPink: #F50057;
+  --color-valentine-light: #FFE9EE;
+  --color-theme-surface: #f5e2e3;
+  --color-theme-page-bg: #FFF7FA;
 }
 
 @theme {
@@ -13,12 +37,14 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-valentine-red: #FF1744;
-  --color-valentine-lightRed: #FF5252;
-  --color-valentine-pink: #FF4081;
-  --color-valentine-lightPink: #FF80AB;
-  --color-valentine-darkPink: #F50057;
-  --color-valentine-light: #FFE9EE;
+  --color-valentine-red: var(--color-valentine-red);
+  --color-valentine-lightRed: var(--color-valentine-lightRed);
+  --color-valentine-pink: var(--color-valentine-pink);
+  --color-valentine-lightPink: var(--color-valentine-lightPink);
+  --color-valentine-darkPink: var(--color-valentine-darkPink);
+  --color-valentine-light: var(--color-valentine-light);
+  --color-theme-surface: var(--color-theme-surface);
+  --color-theme-page-bg: var(--color-theme-page-bg);
   --color-grey1: #D1D5DB;
   --color-grey2: #9CA3AF;
 }

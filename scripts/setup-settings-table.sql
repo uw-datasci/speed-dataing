@@ -25,6 +25,11 @@ INSERT INTO settings (key, value)
 VALUES ('session_state', 'idle')
 ON CONFLICT (key) DO NOTHING;
 
+-- Insert default theme if it doesn't exist
+INSERT INTO settings (key, value)
+VALUES ('theme', 'default')
+ON CONFLICT (key) DO NOTHING;
+
 -- Verify the setup
 SELECT 'Settings table setup complete' as status;
 SELECT * FROM settings; 
