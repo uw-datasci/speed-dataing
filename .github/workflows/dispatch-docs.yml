@@ -1,0 +1,16 @@
+name: Dispatch Docs Update
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  dispatch:
+    name: Dispatch Docs Update
+    uses: uw-datasci/nexus-workflows/.github/workflows/dispatch-docs-update.yml@v4
+    with:
+      app-name: "💘 Speed Dataing"
+    secrets:
+      DOCS_DISPATCH_TOKEN: ${{ secrets.DOCS_DISPATCH_TOKEN }}
