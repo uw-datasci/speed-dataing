@@ -7,9 +7,8 @@ export default function UnauthorizedPage() {
         Access restricted
       </h1>
       <p className="max-w-md text-gray-600">
-        This page is only available to DSC execs and admins. If you think you
-        should have access, ask an organizer to update your role on
-        uwdatascience.ca.
+        This page is only available to DSC admins. If you think you should
+        have access, ask an organizer to update your role on uwdatascience.ca.
       </p>
       <Link
         href="/dashboard"
