@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import FlapNumber from "./FlapNumber";
+import FlapNumber from "@/app/components/FlapNumber";
 
 const POLL_MS = 5000;
 

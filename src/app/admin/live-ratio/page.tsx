@@ -1,4 +1,4 @@
-import LiveRatioBoard from "./LiveRatioBoard";
+import LiveRatioBoard from "@/app/components/LiveRatioBoard";
 
 /** Standalone scoreboard; admin-only via src/app/admin/layout.tsx. */
 export default function LiveRatioPage() {
