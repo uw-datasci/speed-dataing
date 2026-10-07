@@ -47,6 +47,7 @@
   --color-theme-page-bg: var(--color-theme-page-bg);
   --color-grey1: #D1D5DB;
   --color-grey2: #9CA3AF;
+  --color-women-pink: #FF4081;
 }
 
 body {
@@ -57,4 +58,179 @@ body {
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Split-flap digits (/admin/live-ratio scoreboard) ──
+   Mechanics of a real Solari board. A card is split across the middle; four
+   stacked pieces make the flip:
+     static top    – the NEW digit's upper half, revealed as the old flap falls
+     static bottom – the OLD digit's lower half, hidden when the new flap lands
+     falling leaf  – the OLD upper half, hinging down about the centre line
+     rising leaf   – the NEW lower half, swinging down into place after it
+   Both leaves pass through "edge-on toward the viewer" at the midpoint, so
+   the two 90-degree sweeps read as one continuous 180-degree fall.
+   --flap-h (card height) and --flap-delay (stagger) are set by the component. */
+.flap {
+  position: relative;
+  display: inline-block;
+  width: 0.72em;
+  height: var(--flap-h);
+  perspective: 900px;
+  transform-style: preserve-3d;
+  border-radius: 0.6rem;
+  background: var(--color-theme-surface);
+  box-shadow:
+    0 3px 6px rgb(15 23 42 / 0.16),
+    inset 0 0 0 1px rgb(15 23 42 / 0.07);
+}
+
+.flap-face,
+.flap-leaf {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+/* Inset shadows rather than borders: a border would change the box height and
+   knock the two glyph halves out of alignment. */
+.flap-face-top,
+.flap-leaf-top {
+  top: 0;
+  border-radius: 0.6rem 0.6rem 0 0;
+  background: linear-gradient(to bottom, #ffffff 0%, #f4f7fc 100%);
+  box-shadow: inset 0 -1px 0 rgb(15 23 42 / 0.1);
+}
+
+.flap-face-bottom,
+.flap-leaf-bottom {
+  top: 50%;
+  border-radius: 0 0 0.6rem 0.6rem;
+  background: linear-gradient(to bottom, #e9eef7 0%, #ffffff 55%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+/* The leaves are 3D-transformed, so their text renders in a composited layer
+   with grayscale antialiasing. Promoting the static faces the same way keeps
+   the glyph pixel-identical when a leaf retires and the face behind it takes
+   over — otherwise the text visibly re-renders at the end of every flip. */
+.flap-face {
+  transform: translateZ(0);
+}
+
+/* The glyph is always a full card tall; the lower halves shift it up by half a
+   card so only its bottom portion shows through the window. */
+.flap-glyph {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--flap-h);
+  line-height: var(--flap-h);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.flap-face-top .flap-glyph,
+.flap-leaf-top .flap-glyph {
+  top: 0;
+}
+
+.flap-face-bottom .flap-glyph,
+.flap-leaf-bottom .flap-glyph {
+  top: calc(var(--flap-h) / -2);
+}
+
+/* Hinge line across the centre.
+
+   A real element rather than a pseudo-element so the component can re-key it
+   and replay the fade. It is deliberately NOT visible during a flip: .flap is
+   a preserve-3d context, where children sort by depth rather than z-index, so
+   the leaves swinging toward the viewer occlude the hinge no matter what
+   z-index it carries. Snapping back at the instant the leaves retire reads as
+   a crease appearing out of nowhere, so it eases back in instead. */
+.flap-crease {
+  position: absolute;
+  top: calc(50% - 1px);
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgb(15 23 42 / 0.16);
+  z-index: 4;
+  pointer-events: none;
+  animation: crease-in 0.6s cubic-bezier(0.33, 0, 0.67, 1) both;
+}
+
+/* Eases up from nothing, and stays put (`both`) once settled. */
+@keyframes crease-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.35);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.flap-leaf-top {
+  transform-origin: center bottom;
+  animation: flap-fall 0.3s cubic-bezier(0.37, 0, 0.9, 0.46) var(--flap-delay, 0ms) forwards;
+  z-index: 3;
+}
+
+.flap-leaf-bottom {
+  transform-origin: center top;
+  transform: rotateX(90deg);
+  animation: flap-rise 0.38s cubic-bezier(0.25, 0.68, 0.18, 1) calc(var(--flap-delay, 0ms) + 0.3s) forwards;
+  z-index: 2;
+}
+
+/* Shadow gathers under the flap as it swings out, then clears away before it
+   lands flat.
+
+   Every keyframe in a given animation must list its shadows in the same
+   order and with matching inset-ness. A box-shadow list that changes between
+   inset and non-inset is not interpolable, so the browser swaps it abruptly
+   partway through instead of easing it — which reads as a clunk at the end of
+   the flip. The transparent `0 0 0` entries exist to keep the structure
+   identical across keyframes. */
+@keyframes flap-fall {
+  from {
+    transform: rotateX(0deg);
+    box-shadow:
+      inset 0 -1px 0 rgb(15 23 42 / 0.1),
+      0 0 0 rgb(15 23 42 / 0);
+  }
+
+  to {
+    transform: rotateX(-90deg);
+    box-shadow:
+      inset 0 -1px 0 rgb(15 23 42 / 0.1),
+      0 8px 14px rgb(15 23 42 / 0.2);
+  }
+}
+
+@keyframes flap-rise {
+  from {
+    transform: rotateX(90deg);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 -7px 12px rgb(15 23 42 / 0.18);
+  }
+
+  55% {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 -2px 5px rgb(15 23 42 / 0.05);
+  }
+
+  to {
+    transform: rotateX(0deg);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 0 0 rgb(15 23 42 / 0);
+  }
 }
