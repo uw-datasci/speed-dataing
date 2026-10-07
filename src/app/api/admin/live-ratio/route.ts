@@ -6,13 +6,8 @@ import { MEN_PRONOUN_PATTERN, WOMEN_PRONOUN_PATTERN } from "@/lib/gender";
 /** Polled every few seconds by /admin/live-ratio — never cache it. */
 export const dynamic = "force-dynamic";
 
-/**
- * Counts matching rows server-side without transferring any of them.
- *
- * `head: true` means no row payload at all, which also sidesteps PostgREST's
- * row ceiling (1000 by default) — selecting the pronouns column and tallying
- * in JS would silently undercount once the table passes that limit.
- */
+/* Counts server-side with no row payload, avoiding PostgREST's 1000-row
+   ceiling, which would make a JS tally silently undercount past that. */
 function countByPronouns(pattern: string) {
   return supabase
     .from("form_responses")

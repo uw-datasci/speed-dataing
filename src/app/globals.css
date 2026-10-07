@@ -60,16 +60,8 @@ body {
   display: none;
 }
 
-/* ── Split-flap digits (/admin/live-ratio scoreboard) ──
-   Mechanics of a real Solari board. A card is split across the middle; four
-   stacked pieces make the flip:
-     static top    – the NEW digit's upper half, revealed as the old flap falls
-     static bottom – the OLD digit's lower half, hidden when the new flap lands
-     falling leaf  – the OLD upper half, hinging down about the centre line
-     rising leaf   – the NEW lower half, swinging down into place after it
-   Both leaves pass through "edge-on toward the viewer" at the midpoint, so
-   the two 90-degree sweeps read as one continuous 180-degree fall.
-   --flap-h (card height) and --flap-delay (stagger) are set by the component. */
+/* ── Split-flap digits (/admin/live-ratio) ── Two static halves hold the
+   settled digit; two leaves sweep 90deg each to read as one 180deg fall. */
 .flap {
   position: relative;
   display: inline-block;
@@ -94,8 +86,8 @@ body {
   backface-visibility: hidden;
 }
 
-/* Inset shadows rather than borders: a border would change the box height and
-   knock the two glyph halves out of alignment. */
+/* Inset shadows, not borders: a border would change the box height and
+   misalign the two glyph halves. */
 .flap-face-top,
 .flap-leaf-top {
   top: 0;
@@ -112,16 +104,14 @@ body {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
 }
 
-/* The leaves are 3D-transformed, so their text renders in a composited layer
-   with grayscale antialiasing. Promoting the static faces the same way keeps
-   the glyph pixel-identical when a leaf retires and the face behind it takes
-   over — otherwise the text visibly re-renders at the end of every flip. */
+/* Composited like the 3D leaves, so the glyph stays pixel-identical when a
+   leaf retires — otherwise the text re-renders at the end of every flip. */
 .flap-face {
   transform: translateZ(0);
 }
 
-/* The glyph is always a full card tall; the lower halves shift it up by half a
-   card so only its bottom portion shows through the window. */
+/* The glyph is a full card tall; lower halves shift it up by half a card so
+   only its bottom shows through. */
 .flap-glyph {
   position: absolute;
   left: 0;
@@ -142,14 +132,8 @@ body {
   top: calc(var(--flap-h) / -2);
 }
 
-/* Hinge line across the centre.
-
-   A real element rather than a pseudo-element so the component can re-key it
-   and replay the fade. It is deliberately NOT visible during a flip: .flap is
-   a preserve-3d context, where children sort by depth rather than z-index, so
-   the leaves swinging toward the viewer occlude the hinge no matter what
-   z-index it carries. Snapping back at the instant the leaves retire reads as
-   a crease appearing out of nowhere, so it eases back in instead. */
+/* Hinge line. An element, not a pseudo-element, so it can be re-keyed to
+   replay this fade — preserve-3d leaves occlude it mid-flip regardless. */
 .flap-crease {
   position: absolute;
   top: calc(50% - 1px);
@@ -188,15 +172,8 @@ body {
   z-index: 2;
 }
 
-/* Shadow gathers under the flap as it swings out, then clears away before it
-   lands flat.
-
-   Every keyframe in a given animation must list its shadows in the same
-   order and with matching inset-ness. A box-shadow list that changes between
-   inset and non-inset is not interpolable, so the browser swaps it abruptly
-   partway through instead of easing it — which reads as a clunk at the end of
-   the flip. The transparent `0 0 0` entries exist to keep the structure
-   identical across keyframes. */
+/* Keep every frame's shadow list the same length and inset-ness, or it is
+   not interpolable and snaps mid-flip. Hence the transparent entries. */
 @keyframes flap-fall {
   from {
     transform: rotateX(0deg);

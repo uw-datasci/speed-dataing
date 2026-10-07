@@ -12,10 +12,7 @@ interface Counts {
   women: number;
 }
 
-/**
- * Normalises the split to "1 : N" against the smaller side. Takes the counts
- * in the order they are displayed, left column first.
- */
+/** Normalises to "1 : N" against the smaller side; left column first. */
 function formatRatio(leftCount: number, rightCount: number): string {
   if (leftCount === 0 && rightCount === 0) return "—";
   if (leftCount === 0) return `0 : ${rightCount}`;
@@ -124,8 +121,7 @@ export default function LiveRatioBoard() {
           </div>
         </div>
 
-        {/* Only surfaces when polling is failing, so a dead feed does not sit
-            there looking like live numbers. */}
+        {/* Only on failure, so a dead feed cannot pass for live numbers. */}
         {error && (
           <p className="mt-10 text-xs text-red-600 text-center">
             {error} — retrying…

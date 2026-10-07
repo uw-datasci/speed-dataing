@@ -2,40 +2,26 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/**
- * Safety net only. The flip normally ends on the rising leaf's `animationend`
- * event, which is frame-exact; this just stops a card being stuck mid-flip if
- * that event never arrives (an unpainted or backgrounded tab, say). It must
- * stay comfortably LONGER than the CSS animations (0.3s fall + 0.38s settle)
- * — if it fires first, the leaves are torn out while the flip is still
- * running, which looks like a glitch.
- */
+/* Fallback for when `animationend` never fires (backgrounded tab). Must stay
+   longer than the CSS flip (0.3s fall + 0.38s settle) or it cuts it short. */
 const FLIP_FALLBACK_MS = 1200;
 
 /** Each digit to the left starts this much later, like an odometer rolling. */
 const STAGGER_MS = 60;
 
-/**
- * One split-flap card. Shows `value`, and when it changes plays the flip: the
- * old digit's top half hinges down about the centre line while the new
- * digit's bottom half swings into place behind it.
- *
- * Note: this deliberately plays even under `prefers-reduced-motion`. The flip
- * is the entire purpose of this board, and the page is only reachable by an
- * admin who navigated to it on purpose.
- */
+/* One card: the old top half hinges down as the new bottom half swings up.
+   Plays even under prefers-reduced-motion — the flip is the whole point. */
 function FlapDigit({ value, delayMs }: { value: string; delayMs: number }) {
   const [settled, setSettled] = useState(value);
   const [previous, setPrevious] = useState(value);
   const [flipping, setFlipping] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /* Retiring the leaves and committing the new digit to the static bottom
-     face happen in one render, so the card never shows a half-updated
-     state. */
   /* Bumped when a flip lands, to re-key the crease so its fade-in replays. */
   const [creaseKey, setCreaseKey] = useState(0);
 
+  /* Clears the leaves and commits the digit in one render, so the card is
+     never left half-updated. */
   const endFlip = useCallback(() => {
     if (timer.current) {
       clearTimeout(timer.current);
@@ -67,8 +53,8 @@ function FlapDigit({ value, delayMs }: { value: string; delayMs: number }) {
       className="flap font-mono font-bold"
       style={{ ["--flap-delay" as string]: `${delayMs}ms` } as React.CSSProperties}
     >
-      {/* Static halves hold the settled state. The top already shows the new
-          digit; the bottom keeps the old one until the rising leaf covers it. */}
+      {/* Top shows the new digit; the bottom keeps the old one until
+          the rising leaf covers it. */}
       <span className="flap-face flap-face-top">
         <span className="flap-glyph">{settled}</span>
       </span>
@@ -100,10 +86,7 @@ function FlapDigit({ value, delayMs }: { value: string; delayMs: number }) {
   );
 }
 
-/**
- * A number rendered as split-flap cards, zero-padded to `minDigits` the way a
- * scoreboard would show it.
- */
+/** A number as split-flap cards, zero-padded to `minDigits`. */
 export default function FlapNumber({
   value,
   minDigits = 2,
