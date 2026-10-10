@@ -10,6 +10,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Logo from "../../../public/images/logo.svg";
 import Image from "next/image";
+import Link from "next/link";
 import axios from "axios";
 import {
   FaUsers,
@@ -333,6 +334,13 @@ const AdminPage = () => {
                 </p>
               </div>
               <div className="flex gap-3">
+                <Link
+                  href="/admin/live-ratio"
+                  className="bg-white border-2 border-[#374995] text-[#374995] px-4 py-2 rounded-lg hover:bg-[#374995] hover:text-white transition-colors flex items-center gap-2 font-medium"
+                >
+                  <FaChartLine />
+                  View Live Gender Ratio
+                </Link>
                 <button
                   onClick={fetchStats}
                   disabled={loadingStats}

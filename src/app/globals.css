@@ -47,6 +47,7 @@
   --color-theme-page-bg: var(--color-theme-page-bg);
   --color-grey1: #D1D5DB;
   --color-grey2: #9CA3AF;
+  --color-women-pink: #FF4081;
 }
 
 body {
@@ -57,4 +58,156 @@ body {
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Split-flap digits (/admin/live-ratio) ── Two static halves hold the
+   settled digit; two leaves sweep 90deg each to read as one 180deg fall. */
+.flap {
+  position: relative;
+  display: inline-block;
+  width: 0.72em;
+  height: var(--flap-h);
+  perspective: 900px;
+  transform-style: preserve-3d;
+  border-radius: 0.6rem;
+  background: var(--color-theme-surface);
+  box-shadow:
+    0 3px 6px rgb(15 23 42 / 0.16),
+    inset 0 0 0 1px rgb(15 23 42 / 0.07);
+}
+
+.flap-face,
+.flap-leaf {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+/* Inset shadows, not borders: a border would change the box height and
+   misalign the two glyph halves. */
+.flap-face-top,
+.flap-leaf-top {
+  top: 0;
+  border-radius: 0.6rem 0.6rem 0 0;
+  background: linear-gradient(to bottom, #ffffff 0%, #f4f7fc 100%);
+  box-shadow: inset 0 -1px 0 rgb(15 23 42 / 0.1);
+}
+
+.flap-face-bottom,
+.flap-leaf-bottom {
+  top: 50%;
+  border-radius: 0 0 0.6rem 0.6rem;
+  background: linear-gradient(to bottom, #e9eef7 0%, #ffffff 55%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+/* Composited like the 3D leaves, so the glyph stays pixel-identical when a
+   leaf retires — otherwise the text re-renders at the end of every flip. */
+.flap-face {
+  transform: translateZ(0);
+}
+
+/* The glyph is a full card tall; lower halves shift it up by half a card so
+   only its bottom shows through. */
+.flap-glyph {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--flap-h);
+  line-height: var(--flap-h);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.flap-face-top .flap-glyph,
+.flap-leaf-top .flap-glyph {
+  top: 0;
+}
+
+.flap-face-bottom .flap-glyph,
+.flap-leaf-bottom .flap-glyph {
+  top: calc(var(--flap-h) / -2);
+}
+
+/* Hinge line. An element, not a pseudo-element, so it can be re-keyed to
+   replay this fade — preserve-3d leaves occlude it mid-flip regardless. */
+.flap-crease {
+  position: absolute;
+  top: calc(50% - 1px);
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgb(15 23 42 / 0.16);
+  z-index: 4;
+  pointer-events: none;
+  animation: crease-in 0.6s cubic-bezier(0.33, 0, 0.67, 1) both;
+}
+
+/* Eases up from nothing, and stays put (`both`) once settled. */
+@keyframes crease-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.35);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.flap-leaf-top {
+  transform-origin: center bottom;
+  animation: flap-fall 0.3s cubic-bezier(0.37, 0, 0.9, 0.46) var(--flap-delay, 0ms) forwards;
+  z-index: 3;
+}
+
+.flap-leaf-bottom {
+  transform-origin: center top;
+  transform: rotateX(90deg);
+  animation: flap-rise 0.38s cubic-bezier(0.25, 0.68, 0.18, 1) calc(var(--flap-delay, 0ms) + 0.3s) forwards;
+  z-index: 2;
+}
+
+/* Keep every frame's shadow list the same length and inset-ness, or it is
+   not interpolable and snaps mid-flip. Hence the transparent entries. */
+@keyframes flap-fall {
+  from {
+    transform: rotateX(0deg);
+    box-shadow:
+      inset 0 -1px 0 rgb(15 23 42 / 0.1),
+      0 0 0 rgb(15 23 42 / 0);
+  }
+
+  to {
+    transform: rotateX(-90deg);
+    box-shadow:
+      inset 0 -1px 0 rgb(15 23 42 / 0.1),
+      0 8px 14px rgb(15 23 42 / 0.2);
+  }
+}
+
+@keyframes flap-rise {
+  from {
+    transform: rotateX(90deg);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 -7px 12px rgb(15 23 42 / 0.18);
+  }
+
+  55% {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 -2px 5px rgb(15 23 42 / 0.05);
+  }
+
+  to {
+    transform: rotateX(0deg);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.9),
+      0 0 0 rgb(15 23 42 / 0);
+  }
 }
