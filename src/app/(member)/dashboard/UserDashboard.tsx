@@ -18,6 +18,12 @@ export default function UserDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [sessionState, setSessionState] = useState<string>("idle");
   const [isrefreshing, setIsrefreshing] = useState(false);
+  const [nextRoundStatus, setNextRoundStatus] = useState<{
+    hasResponse: boolean;
+    optedIn: boolean;
+  } | null>(null);
+  const [isOptingIn, setIsOptingIn] = useState(false);
+  const [optInError, setOptInError] = useState("");
 
   const checkSessionState = async () => {
     try {
@@ -53,6 +59,51 @@ export default function UserDashboard() {
       return () => clearTimeout(timer);
     }
   }, [fullName]);
+
+  useEffect(() => {
+    if (sessionState !== "matches_released") {
+      setNextRoundStatus(null);
+      setOptInError("");
+      return;
+    }
+
+    let cancelled = false;
+    axios
+      .get("/api/user/next-round-opt-in")
+      .then(({ data }) => {
+        if (!cancelled) setNextRoundStatus(data);
+      })
+      .catch((error) => {
+        console.error("[User Dashboard] Failed to load next-round opt-in:", error);
+        const message = axios.isAxiosError(error) &&
+          typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Could not load your next-round opt-in status.";
+        if (!cancelled) setOptInError(message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionState]);
+
+  const handleNextRoundOptInChange = async (optedIn: boolean) => {
+    setIsOptingIn(true);
+    setOptInError("");
+    try {
+      const { data } = await axios.post("/api/user/next-round-opt-in", { optedIn });
+      setNextRoundStatus({ hasResponse: true, optedIn: data.optedIn });
+    } catch (error) {
+      console.error("[User Dashboard] Failed to opt in to next round:", error);
+      const message = axios.isAxiosError(error) &&
+        typeof error.response?.data?.error === "string"
+        ? error.response.data.error
+        : "Could not save your choice. Please try again.";
+      setOptInError(message);
+    } finally {
+      setIsOptingIn(false);
+    }
+  };
 
   type ButtonType = "start" | "running" | "locked";
   const getButtonType = (): ButtonType => {
@@ -128,6 +179,52 @@ export default function UserDashboard() {
           />
         </div>
       </main>
+
+      {sessionState === "matches_released" &&
+        (nextRoundStatus?.hasResponse || optInError) && (
+        <section className="mt-8 mx-auto max-w-4xl rounded-2xl bg-gradient-to-br from-white to-[#E6EFFD] p-6 shadow-lg sm:p-8">
+          {nextRoundStatus?.hasResponse && (
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="max-w-xl">
+                <h2 className="mt-1 text-xl font-bold text-valentine-red sm:text-2xl">
+                  Next round opt-in
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-valentine-red/80 sm:text-base">
+                  Keep your response available for matching next round. You can
+                  change your choice any time before this round resets.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={nextRoundStatus.optedIn}
+                aria-label="Keep my response for the next matching round"
+                onClick={() => handleNextRoundOptInChange(!nextRoundStatus.optedIn)}
+                disabled={isOptingIn}
+                className={`relative inline-flex h-12 w-24 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-valentine-red/30 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    nextRoundStatus.optedIn ? "bg-valentine-red" : "bg-gray-400"
+                  }`}
+                >
+                  <span
+                    className={`z-10 inline-block h-9 w-9 transform rounded-full bg-white shadow-md transition-transform ${
+                      nextRoundStatus.optedIn ? "translate-x-[3.25rem]" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          )}
+          {optInError && (
+            <p className="mt-4 text-sm text-red-600" role="alert">
+              {optInError}
+            </p>
+          )}
+          {isOptingIn && (
+            <p className="mt-3 text-sm text-valentine-red" role="status">
+              Saving your choice...
+            </p>
+          )}
+        </section>
+      )}
 
       <div className="mt-8 lg:mt-12 flex flex-col items-center">
         <h2 className="text-lg lg:text-3xl font-semibold text-valentine-red mb-4">

@@ -68,6 +68,43 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
+    if (action === 'reset') {
+      const { data: currentSetting, error: currentSettingError } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'session_state')
+        .single();
+
+      if (currentSettingError) {
+        console.error('[Admin Settings API] Error checking round state before cleanup:', currentSettingError);
+        return NextResponse.json({ error: "Failed to check round state" }, { status: 500 });
+      }
+
+      if (currentSetting.value === 'matches_released') {
+        const { error: cleanupError, count } = await supabase
+          .from('form_responses')
+          .delete({ count: 'exact' })
+          .eq('stay_in_database', false);
+
+        if (cleanupError) {
+          console.error('[Admin Settings API] Error removing responses not retained for future rounds:', cleanupError);
+          return NextResponse.json({ error: "Failed to remove responses not retained for future rounds" }, { status: 500 });
+        }
+
+        console.log('[Admin Settings API] Removed responses not retained for future rounds:', count);
+
+        const { error: preferenceResetError } = await supabase
+          .from('form_responses')
+          .update({ stay_in_database: false })
+          .eq('stay_in_database', true);
+
+        if (preferenceResetError) {
+          console.error('[Admin Settings API] Error resetting next-round opt-ins:', preferenceResetError);
+          return NextResponse.json({ error: "Failed to reset next-round opt-ins" }, { status: 500 });
+        }
+      }
+    }
+
     // Update the session state
     const { data, error } = await supabase
       .from('settings')
