@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { getFallbackConversationStarters, parseConversationStarters } from '@/lib/matchmaker/conversationStarterData';
+import type { ConversationStarters } from '@/lib/matchmaker/types';
 
 type MatchData = {
   emoji: string;
   similarity_score: number;
+  conversation_starters?: ConversationStarters | null;
   matched_person: {
     name: string;
     email: string;
@@ -24,6 +27,7 @@ export default function DisplayCard({ matchData }: DisplayCardProps) {
 
   const { emoji, similarity_score, matched_person } = matchData;
   const similarityPercentage = Math.round(similarity_score * 100);
+  const conversationStarters = parseConversationStarters(matchData.conversation_starters) ?? getFallbackConversationStarters();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,6 +48,16 @@ export default function DisplayCard({ matchData }: DisplayCardProps) {
           <p className="text-[#222949] text-sm mb-8">
             Match Score: {similarityPercentage}%
           </p>
+          <section aria-labelledby="conversation-starters-heading" className="mx-4 mb-8 max-w-lg rounded-xl border border-valentine-lightPink bg-white p-6 text-left shadow-sm">
+            <h3 id="conversation-starters-heading" className="mb-3 text-xl font-semibold text-valentine-red">
+              Break the ice
+            </h3>
+            <ul className="list-disc space-y-3 pl-5 text-[#222949]">
+              {conversationStarters.map((starter, index) => (
+                <li key={index} className="break-words">{starter.text}</li>
+              ))}
+            </ul>
+          </section>
           <button 
             onClick={() => setShowMatch(!showMatch)}
             className="mt-8 text-white/60 hover:text-white transition-colors"

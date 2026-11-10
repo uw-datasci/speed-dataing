@@ -8,9 +8,13 @@ CREATE TABLE IF NOT EXISTS curr_matches (
   person2_id UUID NOT NULL,
   similarity_score FLOAT8 NOT NULL,
   emoji TEXT,
+  conversation_starters JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Safe to rerun for databases created before conversation starters were added.
+ALTER TABLE curr_matches ADD COLUMN IF NOT EXISTS conversation_starters JSONB;
 
 -- Create indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_curr_matches_person1_id ON curr_matches(person1_id);
