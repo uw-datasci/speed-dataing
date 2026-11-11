@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
 This repo uses [pnpm](https://pnpm.io) (version pinned in `package.json`'s `packageManager` field). Install dependencies and run the development server:
