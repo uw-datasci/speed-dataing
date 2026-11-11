@@ -24,7 +24,23 @@ export async function GET() {
     }
 
     console.log('[Admin Settings API] Session state fetched:', data);
-    return NextResponse.json({ success: true, setting: data });
+
+    // Resetting from matches_released deletes these, so the admin page shows the count before confirming.
+    let responsesToDelete: number | null = null;
+    if (data?.value === 'matches_released') {
+      const { count, error: countError } = await supabase
+        .from('form_responses')
+        .select('id', { count: 'exact', head: true })
+        .eq('stay_in_database', false);
+
+      if (countError) {
+        console.error('[Admin Settings API] Error counting responses not retained for future rounds:', countError);
+      } else {
+        responsesToDelete = count ?? 0;
+      }
+    }
+
+    return NextResponse.json({ success: true, setting: data, responsesToDelete });
   } catch (error) {
     console.error('[Admin Settings API] Unexpected error:', error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -36,7 +52,7 @@ export async function PUT(request: Request) {
   if (auth instanceof NextResponse) return auth;
 
   try {
-    const { action } = await request.json();
+    const { action, confirmDelete } = await request.json();
     
     console.log('[Admin Settings API] Processing action:', action);
 
@@ -81,6 +97,16 @@ export async function PUT(request: Request) {
       }
 
       if (currentSetting.value === 'matches_released') {
+        if (confirmDelete !== true) {
+          return NextResponse.json(
+            {
+              error: "Resetting now deletes responses that did not opt in. Confirm the reset to continue.",
+              requiresConfirmation: true,
+            },
+            { status: 409 }
+          );
+        }
+
         const { error: cleanupError, count } = await supabase
           .from('form_responses')
           .delete({ count: 'exact' })
