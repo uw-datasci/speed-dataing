@@ -68,6 +68,20 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
+    if (action === 'reset') {
+      const { error: clearPairsError, count } = await supabase
+        .from('manual_match_pairs')
+        .delete({ count: 'exact' })
+        .not('id', 'is', null);
+
+      if (clearPairsError) {
+        console.error('[Admin Settings API] Error clearing manual pairs:', clearPairsError);
+        return NextResponse.json({ error: "Failed to clear manual pairs" }, { status: 500 });
+      }
+
+      console.log('[Admin Settings API] Cleared manual pairs:', count);
+    }
+
     // Update the session state
     const { data, error } = await supabase
       .from('settings')
