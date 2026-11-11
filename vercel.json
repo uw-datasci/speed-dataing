@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install --include=dev && npm run build",
-  "installCommand": "npm install --include=dev",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "pnpm install",
   "framework": "nextjs"
 }

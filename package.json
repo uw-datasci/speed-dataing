@@ -45,12 +45,5 @@
   "engines": {
     "node": "22.x"
   },
-  "overrides": {
-    "sharp": {
-      "linux-x64": "0.33.0"
-    },
-    "lightningcss": {
-      "linux-x64": "1.25.0"
-    }
-  }
+  "packageManager": "pnpm@12.8.1"
 }
