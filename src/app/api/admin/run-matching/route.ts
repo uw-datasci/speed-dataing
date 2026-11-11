@@ -13,6 +13,9 @@ import {
   updatePreviousMatches,
 } from "@/lib/matchmaker/embeddings";
 
+// Local embedding model is CPU-bound; give it the full Hobby-plan ceiling instead of the 10s default.
+export const maxDuration = 60;
+
 // Pool of unique emojis for matches (exactly 100 emojis)
 const EMOJI_POOL = [
   "💖",

@@ -12,9 +12,9 @@ There are 3 tables pulled from and written to:
 
 3. **prev_matches**: All previous matches per participant. Length is number of participants.
 
-## OpenAI Vector Embeddings
+## Sentence-Transformers Vector Embeddings
 
-The model 'text-embedding-3-small' was used for minimal computation. 
+The model 'Xenova/all-MiniLM-L6-v2' (an ONNX port of sentence-transformers/all-MiniLM-L6-v2, 384-dim) is run locally in Node via `@huggingface/transformers` (transformers.js). This requires no API key and has no per-call cost, unlike the OpenAI embeddings used previously.
 
 ## Odd number of participants
 
@@ -33,4 +33,4 @@ If there is an odd number of participants and odd_participant is already one of 
 
 *What to change each term*:
 Since each term has different execs, simply change the name field of the odd_participant to an exec who will be at the event. 
-Do NOT change the vector_embedding field, it will be costly to recalculate each time. We can hand-wave this pair, it doesn't have to be perfect.
+Their vector_embedding is computed the same way as everyone else's, since local embeddings are free to (re)generate.
