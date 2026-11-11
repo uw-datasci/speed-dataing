@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { requireSessionApi } from '@/lib/auth/api';
+import { getFallbackConversationStarters, parseConversationStarters } from '@/lib/matchmaker/conversationStarterData';
 
 export async function GET() {
   const auth = await requireSessionApi();
@@ -80,6 +81,7 @@ export async function GET() {
         id: match.id,
         similarity_score: match.similarity_score,
         emoji: match.emoji,
+        conversation_starters: parseConversationStarters(match.conversation_starters) ?? getFallbackConversationStarters(),
         matched_person: {
           name: matchedPerson.name,
           email: matchedPerson.email,
@@ -98,4 +100,4 @@ export async function GET() {
       details: error.message 
     }, { status: 500 });
   }
-} 
+}
