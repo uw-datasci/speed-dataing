@@ -584,16 +584,56 @@ export async function handleOddParticipant(participants: { id: string }[]) {
  * PRIORITIZES MATCHING BASED ON GENDER INTENTION (0=same, 1=opposite, 2=both).
  * RETURNS ARRAY OF Match TO BE INSERTED INTO curr_matches TABLE and the previous_matches TABLE.
  */
-export async function matchParticipants(): Promise<Match[]> {
-  // fetch everyone's id + embedding + gender + intention
-  const { data: rows, error: fetchErr } = await supabase
+export async function matchParticipants(
+  manualPairs: { person1_id: string; person2_id: string }[] = [],
+): Promise<Match[]> {
+  const { data: allRows, error: fetchErr } = await supabase
     .from("form_responses")
     .select("id, email, vector_embedding, pronouns, intention");
   if (fetchErr) {
     console.error("Could not fetch embeddings:", fetchErr);
     throw fetchErr;
   }
-  if (!rows) return [];
+  if (!allRows) return [];
+
+  const participantIndices = new Map(
+    allRows.map((participant, index) => [participant.id, index]),
+  );
+  const manuallyPairedIds = new Set<string>();
+  const matches: Match[] = [];
+
+  for (const pair of manualPairs) {
+    const person1Index = participantIndices.get(pair.person1_id);
+    const person2Index = participantIndices.get(pair.person2_id);
+    if (
+      person1Index === undefined ||
+      person2Index === undefined ||
+      person1Index === person2Index ||
+      manuallyPairedIds.has(pair.person1_id) ||
+      manuallyPairedIds.has(pair.person2_id)
+    ) {
+      throw new Error("Manual pairs must reference distinct, unique participants");
+    }
+
+    manuallyPairedIds.add(pair.person1_id);
+    manuallyPairedIds.add(pair.person2_id);
+    matches.push({
+      person1_id: pair.person1_id,
+      person2_id: pair.person2_id,
+      similarity_score: cosineSimilarity(
+        allRows[person1Index].vector_embedding!,
+        allRows[person2Index].vector_embedding!,
+      ),
+      emoji: "",
+    });
+  }
+
+  const rows = allRows.filter((participant) => !manuallyPairedIds.has(participant.id));
+  if (manualPairs.length > 0) {
+    console.log(
+      `Reserved ${manualPairs.length} fixed manual pair(s); ${manuallyPairedIds.size} participants excluded from automatic matching.`,
+    );
+  }
 
   // Helper function to determine gender from pronouns
   function getGender(pronouns: string): "male" | "female" | "other" {
@@ -687,8 +727,6 @@ export async function matchParticipants(): Promise<Match[]> {
 
   // Track who has been matched
   const used = new Set<number>();
-  const matches: Match[] = [];
-
   // PHASE 1: Match intention-compatible pairs first (greedy by similarity)
   console.log("\n=== PHASE 1: Matching intention-compatible pairs ===");
   for (const { i, j, sim } of intentionPairs) {

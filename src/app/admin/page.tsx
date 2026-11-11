@@ -44,6 +44,12 @@ interface FormResponse {
   [key: string]: any;
 }
 
+interface ManualPair {
+  id: string;
+  person1: { email: string; name: string };
+  person2: { email: string; name: string };
+}
+
 interface Pagination {
   currentPage: number;
   totalPages: number;
@@ -72,12 +78,21 @@ const AdminPage = () => {
   const [pendingTheme, setPendingTheme] = useState<"default" | "valentines">("default");
   const [editingTheme, setEditingTheme] = useState(false);
   const [savingTheme, setSavingTheme] = useState(false);
+  const [manualPairs, setManualPairs] = useState<ManualPair[]>([]);
+  const [manualPairsLoading, setManualPairsLoading] = useState(true);
+  const [manualPairEmail1, setManualPairEmail1] = useState("");
+  const [manualPairEmail2, setManualPairEmail2] = useState("");
+  const [savingManualPair, setSavingManualPair] = useState(false);
+  const [removingManualPairId, setRemovingManualPairId] = useState<string | null>(null);
+  const [manualPairError, setManualPairError] = useState("");
+  const [manualPairMessage, setManualPairMessage] = useState("");
 
   useEffect(() => {
     fetchStats();
     fetchResponses(1, "", "created_at", "desc");
     fetchSettings();
     fetchTheme();
+    fetchManualPairs();
   }, []);
 
   const fetchStats = async () => {
@@ -154,6 +169,70 @@ const AdminPage = () => {
       setPendingTheme(theme);
     } catch (error) {
       console.error("[Admin Page] Error fetching theme:", error);
+    }
+  };
+
+  const fetchManualPairs = async () => {
+    setManualPairsLoading(true);
+    try {
+      const { data } = await axios.get("/api/admin/manual-pairs");
+      setManualPairs(data.pairs);
+      setManualPairError("");
+    } catch (error) {
+      console.error("[Admin Page] Error fetching manual pairs:", error);
+      setManualPairError(
+        axios.isAxiosError(error) && typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Failed to fetch manual pairs."
+      );
+    } finally {
+      setManualPairsLoading(false);
+    }
+  };
+
+  const addManualPair = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSavingManualPair(true);
+    setManualPairError("");
+    setManualPairMessage("");
+    try {
+      await axios.post("/api/admin/manual-pairs", {
+        email1: manualPairEmail1,
+        email2: manualPairEmail2,
+      });
+      setManualPairEmail1("");
+      setManualPairEmail2("");
+      setManualPairMessage("Fixed pair added.");
+      await fetchManualPairs();
+    } catch (error) {
+      console.error("[Admin Page] Error adding manual pair:", error);
+      setManualPairError(
+        axios.isAxiosError(error) && typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Failed to add manual pair."
+      );
+    } finally {
+      setSavingManualPair(false);
+    }
+  };
+
+  const removeManualPair = async (id: string) => {
+    setRemovingManualPairId(id);
+    setManualPairError("");
+    setManualPairMessage("");
+    try {
+      await axios.delete("/api/admin/manual-pairs", { data: { id } });
+      setManualPairs((currentPairs) => currentPairs.filter((pair) => pair.id !== id));
+      setManualPairMessage("Fixed pair removed.");
+    } catch (error) {
+      console.error("[Admin Page] Error removing manual pair:", error);
+      setManualPairError(
+        axios.isAxiosError(error) && typeof error.response?.data?.error === "string"
+          ? error.response.data.error
+          : "Failed to remove manual pair."
+      );
+    } finally {
+      setRemovingManualPairId(null);
     }
   };
 
@@ -565,6 +644,118 @@ const AdminPage = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Manual Pairing */}
+              <section className="bg-white rounded-lg shadow-lg p-6 border-2 border-[#374995]">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                  <h3 className="text-xl font-semibold text-[#374995]">Manual Pairing</h3>
+                  <button
+                    type="button"
+                    onClick={fetchManualPairs}
+                    disabled={manualPairsLoading}
+                    className="bg-[#374995] text-white px-3 py-1 rounded text-sm hover:bg-[#5989fc] transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <FaSync className={manualPairsLoading ? "animate-spin" : ""} />
+                    refresh
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 mb-5">
+                Reserve two submitted responses as a fixed match before matching starts.
+                Reserved participants are hidden from Form Responses and excluded from automatic matching.
+                Their records remain available for profiles and match history.
+                </p>
+
+                <form
+                  onSubmit={addManualPair}
+                  className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end"
+                >
+                  <label className="text-sm font-medium text-gray-700">
+                    First DSC email
+                    <input
+                      type="email"
+                      required
+                      value={manualPairEmail1}
+                      onChange={(event) => setManualPairEmail1(event.target.value)}
+                      placeholder="person1@uwaterloo.ca"
+                      disabled={!["idle", "form_active"].includes(getSessionState()) || savingManualPair}
+                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-normal text-gray-900 outline-none focus:border-[#374995] focus:ring-2 focus:ring-[#374995]/20 disabled:bg-gray-100"
+                    />
+                  </label>
+                  <label className="text-sm font-medium text-gray-700">
+                    Second DSC email
+                    <input
+                      type="email"
+                      required
+                      value={manualPairEmail2}
+                      onChange={(event) => setManualPairEmail2(event.target.value)}
+                      placeholder="person2@uwaterloo.ca"
+                      disabled={!["idle", "form_active"].includes(getSessionState()) || savingManualPair}
+                      className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 font-normal text-gray-900 outline-none focus:border-[#374995] focus:ring-2 focus:ring-[#374995]/20 disabled:bg-gray-100"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={
+                      !["idle", "form_active"].includes(getSessionState()) ||
+                      savingManualPair ||
+                      !manualPairEmail1.trim() ||
+                      !manualPairEmail2.trim()
+                    }
+                    className="rounded-lg bg-[#374995] px-5 py-2 text-white transition-colors hover:bg-[#5989fc] disabled:cursor-not-allowed disabled:bg-gray-400"
+                  >
+                    {savingManualPair ? "Adding..." : "Pair accounts"}
+                  </button>
+                </form>
+
+                {!["idle", "form_active"].includes(getSessionState()) && (
+                  <p className="mt-3 text-sm text-gray-500">
+                    Manual pairs can only be changed before matching starts.
+                  </p>
+                )}
+                {manualPairError && (
+                  <p className="mt-3 text-sm text-red-600" role="alert">{manualPairError}</p>
+                )}
+                {manualPairMessage && (
+                  <p className="mt-3 text-sm text-green-700" role="status">{manualPairMessage}</p>
+                )}
+
+                <div className="mt-6">
+                  <h4 className="font-medium text-gray-900 mb-3">Reserved matches</h4>
+                  {manualPairsLoading ? (
+                    <p className="text-sm text-gray-500">Loading manual pairs...</p>
+                  ) : manualPairs.length === 0 ? (
+                    <p className="text-sm text-gray-500">No manual pairs have been added.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {manualPairs.map((pair) => (
+                        <li
+                          key={pair.id}
+                          className="flex flex-col gap-3 rounded-lg bg-[#E6EFFD] p-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <span className="text-sm text-gray-800">
+                            <span className="font-medium">{pair.person1.name}</span>{" "}
+                            <span className="text-gray-600">({pair.person1.email})</span>
+                            <span className="mx-2 font-semibold text-[#374995]">↔</span>
+                            <span className="font-medium">{pair.person2.name}</span>{" "}
+                            <span className="text-gray-600">({pair.person2.email})</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeManualPair(pair.id)}
+                            disabled={
+                              !["idle", "form_active"].includes(getSessionState()) ||
+                              removingManualPairId === pair.id
+                            }
+                            className="self-start text-sm font-medium text-red-700 hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-50 sm:self-auto"
+                          >
+                            {removingManualPairId === pair.id ? "Removing..." : "Remove"}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </section>
 
               {/* Theme Control */}
               <div className="relative bg-white rounded-lg shadow-lg p-6 border-2 border-[#374995] overflow-hidden">
