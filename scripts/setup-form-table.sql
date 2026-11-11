@@ -20,9 +20,14 @@ CREATE TABLE IF NOT EXISTS form_responses (
   evil_hobby VARCHAR(10),
   most_likely_to VARCHAR(10),
   caught_watching VARCHAR(10),
+  stay_in_database BOOLEAN NOT NULL DEFAULT FALSE,
   vector_embedding FLOAT8[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Add the retention preference to existing installations.
+ALTER TABLE form_responses
+ADD COLUMN IF NOT EXISTS stay_in_database BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_form_responses_email ON form_responses(email);

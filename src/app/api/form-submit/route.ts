@@ -110,6 +110,7 @@ export async function POST(request: Request) {
       most_likely_to: formData.most_likely_to || null,
       caught_watching: formData.caught_watching || null,
       intention: formData.intention || null,
+      stay_in_database: false,
     };
 
     console.log("[Form Submit API] Inserting submission data:", submissionData);

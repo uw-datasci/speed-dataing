@@ -72,6 +72,8 @@ const AdminPage = () => {
   const [pendingTheme, setPendingTheme] = useState<"default" | "valentines">("default");
   const [editingTheme, setEditingTheme] = useState(false);
   const [savingTheme, setSavingTheme] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState<{ count: number | null } | null>(null);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -187,11 +189,25 @@ const AdminPage = () => {
     }
   };
 
-  const toggleSetting = async (action: string) => {
+  const toggleSetting = async (action: string, confirmDelete = false) => {
+    // Resetting after matches are released deletes responses, so ask first and show how many.
+    if (action === "reset" && getSessionState() === "matches_released" && !confirmDelete) {
+      try {
+        const { data } = await axios.get("/api/admin/settings");
+        setResetConfirm({
+          count: typeof data.responsesToDelete === "number" ? data.responsesToDelete : null,
+        });
+      } catch (error) {
+        console.error("[Admin Page] Error counting responses before reset:", error);
+        setResetConfirm({ count: null });
+      }
+      return;
+    }
+
     try {
       console.log("[Admin Page] Executing action:", action);
 
-      const response = await axios.put("/api/admin/settings", { action });
+      const response = await axios.put("/api/admin/settings", { action, confirmDelete });
 
       if (response.data.success) {
         // refresh settings from the database to get the latest state
@@ -200,6 +216,16 @@ const AdminPage = () => {
       }
     } catch (error) {
       console.error("[Admin Page] Error executing action:", error);
+    }
+  };
+
+  const confirmReset = async () => {
+    setResetting(true);
+    try {
+      await toggleSetting("reset", true);
+    } finally {
+      setResetting(false);
+      setResetConfirm(null);
     }
   };
 
@@ -487,7 +513,7 @@ const AdminPage = () => {
                 <div className="flex justify-center">
                   <button
                     onClick={() => toggleSetting(getSessionStateInfo().nextAction)}
-                    disabled={loadingSettings}
+                    disabled={loadingSettings || resetConfirm !== null}
                     className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                       loadingSettings
                         ? "bg-gray-400 text-gray-600 cursor-not-allowed"
@@ -497,6 +523,46 @@ const AdminPage = () => {
                     {loadingSettings ? "Processing..." : getSessionStateInfo().nextActionText}
                   </button>
                 </div>
+
+                {/* Reset confirmation - resetting after matches are released deletes responses */}
+                {resetConfirm && (
+                  <div
+                    role="alertdialog"
+                    aria-labelledby="reset-confirm-title"
+                    aria-describedby="reset-confirm-text"
+                    className="mt-4 mx-auto max-w-lg rounded-lg border-2 border-red-300 bg-red-50 p-4"
+                  >
+                    <h4 id="reset-confirm-title" className="font-semibold text-red-800">
+                      Reset this round?
+                    </h4>
+                    <p id="reset-confirm-text" className="mt-1 text-sm text-red-700">
+                      {resetConfirm.count === null
+                        ? "This permanently deletes every response that did not opt in to the next round."
+                        : `This permanently deletes ${resetConfirm.count} response${
+                            resetConfirm.count === 1 ? "" : "s"
+                          } that did not opt in to the next round.`}{" "}
+                      This cannot be undone.
+                    </p>
+                    <div className="mt-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setResetConfirm(null)}
+                        disabled={resetting}
+                        className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={confirmReset}
+                        disabled={resetting}
+                        className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                      >
+                        {resetting ? "Resetting..." : "Delete and reset"}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Matching Algorithm Button - Only show when matching_in_progress */}
                 {getSessionState() === "matching_in_progress" && (
