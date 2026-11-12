@@ -215,6 +215,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const { data: manualPairs, error: manualPairsError } = await supabase
+      .from("manual_match_pairs")
+      .select("person1_id, person2_id");
+
+    if (manualPairsError) {
+      console.error("[Run Matching API] Failed to fetch manual pairs:", manualPairsError);
+      return NextResponse.json(
+        { error: "Failed to fetch manual pairs before matching" },
+        { status: 500 }
+      );
+    }
+
+    const participantIds = new Set(participants.map((participant) => participant.id));
+    const invalidPair = (manualPairs ?? []).some(
+      (pair) =>
+        !participantIds.has(pair.person1_id) ||
+        !participantIds.has(pair.person2_id) ||
+        pair.person1_id === pair.person2_id
+    );
+    if (invalidPair) {
+      return NextResponse.json(
+        { error: "A manual pair references an invalid participant" },
+        { status: 409 }
+      );
+    }
+
     console.log(
       `[Run Matching API] Found ${participants.length} participants, starting matching...`
     );
@@ -233,7 +259,7 @@ export async function POST(request: NextRequest) {
 
     // Step 4: Match participants
     console.log("[Run Matching API] Step 4: Running matching algorithm...");
-    const matches = await matchParticipants();
+    const matches = await matchParticipants(manualPairs ?? []);
 
     if (matches.length === 0) {
       console.log("[Run Matching API] No matches generated");

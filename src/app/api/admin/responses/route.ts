@@ -19,9 +19,26 @@ export async function GET(request: Request) {
 
     console.log('[Admin Responses API] Fetching form responses with params:', { page, limit, search, sortBy, sortOrder });
 
+    const { data: manualPairs, error: manualPairsError } = await supabase
+      .from('manual_match_pairs')
+      .select('person1_id, person2_id');
+
+    if (manualPairsError) {
+      console.error('[Admin Responses API] Error loading participants reserved into manual matches:', manualPairsError);
+      return NextResponse.json({ error: "Failed to fetch form responses" }, { status: 500 });
+    }
+
+    const reservedParticipantIds = Array.from(
+      new Set((manualPairs || []).flatMap((pair) => [pair.person1_id, pair.person2_id]))
+    );
+
     let query = supabase
       .from('form_responses')
       .select('*', { count: 'exact' });
+
+    if (reservedParticipantIds.length > 0) {
+      query = query.not('id', 'in', `(${reservedParticipantIds.join(',')})`);
+    }
 
     // Add search filter if provided
     if (search) {
@@ -56,10 +73,17 @@ export async function GET(request: Request) {
       
       // Try a simpler query without sorting if the original fails
       console.log('[Admin Responses API] Trying fallback query without sorting...');
-      const { data: fallbackResponses, error: fallbackError, count: fallbackCount } = await supabase
+      let fallbackQuery = supabase
         .from('form_responses')
         .select('*', { count: 'exact' })
         .range(from, to);
+
+      if (reservedParticipantIds.length > 0) {
+        fallbackQuery = fallbackQuery.not('id', 'in', `(${reservedParticipantIds.join(',')})`);
+      }
+
+      const { data: fallbackResponses, error: fallbackError, count: fallbackCount } =
+        await fallbackQuery;
 
       if (fallbackError) {
         console.error('[Admin Responses API] Fallback query also failed:', fallbackError);

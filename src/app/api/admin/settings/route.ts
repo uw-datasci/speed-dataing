@@ -129,6 +129,19 @@ export async function PUT(request: Request) {
           return NextResponse.json({ error: "Failed to reset next-round opt-ins" }, { status: 500 });
         }
       }
+
+      // Manual pairs only apply to one round, so a reset clears them.
+      const { error: clearPairsError, count: clearedPairs } = await supabase
+        .from('manual_match_pairs')
+        .delete({ count: 'exact' })
+        .not('id', 'is', null);
+
+      if (clearPairsError) {
+        console.error('[Admin Settings API] Error clearing manual pairs:', clearPairsError);
+        return NextResponse.json({ error: "Failed to clear manual pairs" }, { status: 500 });
+      }
+
+      console.log('[Admin Settings API] Cleared manual pairs:', clearedPairs);
     }
 
     // Update the session state
