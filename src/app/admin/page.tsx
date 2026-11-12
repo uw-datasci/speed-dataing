@@ -18,6 +18,7 @@ import {
   FaChartLine,
   FaCalendarAlt,
   FaSearch,
+  FaLink,
   FaSync,
   FaEye,
   FaTrash,
@@ -367,6 +368,13 @@ const AdminPage = () => {
                   <FaChartLine />
                   View Live Gender Ratio
                 </Link>
+                <Link
+                  href="/admin/manual-pairs"
+                  className="bg-white border-2 border-[#374995] text-[#374995] px-4 py-2 rounded-lg hover:bg-[#374995] hover:text-white transition-colors flex items-center gap-2 font-medium"
+                >
+                  <FaLink />
+                  Manual Pairing
+                </Link>
                 <button
                   onClick={fetchStats}
                   disabled={loadingStats}
@@ -541,7 +549,7 @@ const AdminPage = () => {
                         : `This permanently deletes ${resetConfirm.count} response${
                             resetConfirm.count === 1 ? "" : "s"
                           } that did not opt in to the next round.`}{" "}
-                      This cannot be undone.
+                      Any manual pairs are cleared too. This cannot be undone.
                     </p>
                     <div className="mt-3 flex justify-end gap-2">
                       <button
