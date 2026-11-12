@@ -1,110 +1,85 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { requireSessionApi } from '@/lib/auth/api';
 
+interface PreviousMatchRow {
+  id: string;
+  person1_email: string | null;
+  person2_email: string | null;
+  similarity_score: number | null;
+  emoji: string | null;
+  created_at: string;
+}
+
+/**
+ * The signed-in person's past matches across every round.
+ *
+ * Looked up by email rather than response id: responses are deleted when a round
+ * resets, so someone returning for a new round has a new id but the same email.
+ * A partner whose response has since been deleted still appears, without details.
+ */
 export async function GET() {
   const auth = await requireSessionApi();
   if (auth instanceof NextResponse) return auth;
 
+  const userEmail = (auth.email ?? '').trim().toLowerCase();
+  if (!userEmail) {
+    return NextResponse.json({ error: "Your account does not have an email address" }, { status: 400 });
+  }
+
   try {
-    console.log('[User History API] Fetching user history...');
-
-    const userEmail = auth.email;
-    console.log('[User History API] User email from session:', userEmail);
-
-    // Find the user's form response ID (UUID) - try email column
-    const { data: userFormData, error: userError } = await supabase
-      .from('form_responses')
-      .select('id')
-      .eq('email', userEmail)
-      .single();
-
-    if (userError || !userFormData) {
-      console.error('[User History API] User not found in form_responses:', userError);
-      return NextResponse.json({ 
-        error: "User not found in form responses. Please submit the form first.",
-        userEmail: userEmail 
-      }, { status: 404 });
-    }
-
-    const userUUID = userFormData.id;
-    console.log('[User History API] User UUID from form_responses:', userUUID);
-
-    // Get the user's previous matches
-    const { data: previousMatches, error: matchesError } = await supabase
+    const quoted = `"${userEmail.replace(/["\\]/g, '\\$&')}"`;
+    const { data: rows, error: matchesError } = await supabase
       .from('previous_matches')
-      .select('*')
-      .eq('id', userUUID)
-      .single();
+      .select('id, person1_email, person2_email, similarity_score, emoji, created_at')
+      .or(`person1_email.eq.${quoted},person2_email.eq.${quoted}`)
+      .order('created_at', { ascending: false });
 
     if (matchesError) {
-      if (matchesError.code === 'PGRST116') {
-        // No previous matches found
-        console.log('[User History API] No previous matches found for user');
-        return NextResponse.json({ 
-          matches: [],
-          message: "No previous matches found"
-        });
-      }
       console.error('[User History API] Error fetching previous matches:', matchesError);
       return NextResponse.json({ error: "Failed to fetch previous matches" }, { status: 500 });
     }
 
-    if (!previousMatches || !previousMatches.matched_with || previousMatches.matched_with.length === 0) {
-      console.log('[User History API] No previous matches found');
-      return NextResponse.json({ 
-        matches: [],
-        message: "No previous matches found"
-      });
+    const history = (rows ?? []) as PreviousMatchRow[];
+    if (history.length === 0) {
+      return NextResponse.json({ matches: [], message: "No previous matches found" });
     }
 
-    // Get details for all matched users
-    const { data: matchedUsers, error: usersError } = await supabase
-      .from('form_responses')
-      .select('id, name, social_media_links, program, year')
-      .in('id', previousMatches.matched_with);
+    const partnerEmailOf = (row: PreviousMatchRow) =>
+      ((row.person1_email ?? '').toLowerCase() === userEmail ? row.person2_email : row.person1_email) ?? '';
 
-    if (usersError) {
-      console.error('[User History API] Error fetching matched users:', usersError);
+    const partnerEmails = Array.from(new Set(history.map(partnerEmailOf).filter(Boolean)));
+    const { data: partners, error: partnersError } = await supabase
+      .from('form_responses')
+      .select('email, name, social_media_links, program, year')
+      .in('email', partnerEmails);
+
+    if (partnersError) {
+      console.error('[User History API] Error fetching matched users:', partnersError);
       return NextResponse.json({ error: "Failed to fetch matched users" }, { status: 500 });
     }
 
-    // Create a map of user details by ID for easy lookup
-    const userDetailsMap = new Map();
-    matchedUsers?.forEach(user => {
-      userDetailsMap.set(user.id, user);
-    });
+    const partnerByEmail = new Map((partners ?? []).map((p) => [(p.email ?? '').toLowerCase(), p]));
 
-    // Combine match data with user details
-    const matchesWithDetails = previousMatches.matched_with.map((matchedUserId: string, index: number) => {
-      const userDetails = userDetailsMap.get(matchedUserId);
-      const similarityScore = previousMatches.similarity_scores?.[index] || 0;
-      const emoji = previousMatches.emojis?.[index] || '🤝';
-
+    const matches = history.map((row) => {
+      const partner = partnerByEmail.get(partnerEmailOf(row).toLowerCase());
       return {
-        matchedUserId,
-        name: userDetails?.name || 'Unknown',
-        social_media_links: userDetails?.social_media_links || '',
-        program: userDetails?.program || 'Unknown',
-        year: userDetails?.year || 'Unknown',
-        similarity_score: similarityScore,
-        emoji: emoji
+        matchedUserId: row.id,
+        name: partner?.name || 'Former participant',
+        social_media_links: partner?.social_media_links || '',
+        program: partner?.program || 'Unknown',
+        year: partner?.year || 'Unknown',
+        similarity_score: row.similarity_score ?? 0,
+        emoji: row.emoji || '🤝',
       };
     });
 
-    console.log('[User History API] Successfully fetched matches:', matchesWithDetails.length);
-
-    return NextResponse.json({
-      matches: matchesWithDetails,
-      message: "Previous matches retrieved successfully"
-    });
-
-  } catch (error: any) {
+    return NextResponse.json({ matches, message: "Previous matches retrieved successfully" });
+  } catch (error) {
     console.error('[User History API] Error:', error);
-    return NextResponse.json({ 
-      error: "Internal server error",
-      details: error.message 
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error", details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
   }
-} 
+}
