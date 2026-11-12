@@ -69,6 +69,11 @@ const odd_participant: Participant = {
   // No hard-coded vector needed; computed like any other participant since embeddings are now free.
 };
 
+/** Emails identify people across rounds, so compare them case-insensitively. */
+function normalizeEmail(email: string | null | undefined): string {
+  return (email ?? "").trim().toLowerCase();
+}
+
 /**
  * Deletes all rows from curr_matches table.
  */
@@ -253,27 +258,38 @@ export async function matchParticipants(): Promise<Match[]> {
     }
   }
 
-  // Fetch already matched pairs from previous_matches table
+  // Fetch already matched pairs from previous_matches table.
+  // Pairs are keyed by email, not response id: responses are deleted between rounds,
+  // and someone who signs up again gets a new id but keeps their email.
   const { data: already_matched, error: prevErr } = await supabase
     .from("previous_matches")
-    .select("person1_id, person2_id");
+    .select("person1_email, person2_email");
   if (prevErr) {
     console.error("Could not fetch previous_matches:", prevErr);
     throw prevErr;
   }
 
-  // map each participant → set of UUIDs they've already been matched with
+  // map each email → set of emails they've already been matched with
   const prevMap = new Map<string, Set<string>>();
-  for (const { person1_id, person2_id } of already_matched || []) {
-    if (!prevMap.has(person1_id)) {
-      prevMap.set(person1_id, new Set());
+  let missingEmails = 0;
+  for (const { person1_email, person2_email } of already_matched || []) {
+    const email1 = normalizeEmail(person1_email);
+    const email2 = normalizeEmail(person2_email);
+    if (!email1 || !email2) {
+      missingEmails++;
+      continue;
     }
-    if (!prevMap.has(person2_id)) {
-      prevMap.set(person2_id, new Set());
-    }
-    prevMap.get(person1_id)!.add(person2_id);
-    prevMap.get(person2_id)!.add(person1_id);
+    if (!prevMap.has(email1)) prevMap.set(email1, new Set());
+    if (!prevMap.has(email2)) prevMap.set(email2, new Set());
+    prevMap.get(email1)!.add(email2);
+    prevMap.get(email2)!.add(email1);
   }
+  if (missingEmails > 0) {
+    console.warn(`${missingEmails} previous_matches rows have no emails and cannot be excluded.`);
+  }
+
+  const metBefore = (i: number, j: number) =>
+    prevMap.get(normalizeEmail(rows[i].email))?.has(normalizeEmail(rows[j].email)) ?? false;
 
   console.log(`Found ${already_matched?.length || 0} previous matches to exclude.`);
 
@@ -302,10 +318,8 @@ export async function matchParticipants(): Promise<Match[]> {
     // skip if either is already in a new match
     if (used.has(i) || used.has(j)) continue;
 
-    // skip if they've met before (check both directions)
-    const met1 = prevMap.get(id1)?.has(id2) ?? false;
-    const met2 = prevMap.get(id2)?.has(id1) ?? false;
-    if (met1 || met2) {
+    // skip if they've met before
+    if (metBefore(i, j)) {
       console.log(
         `Skipping pair (${rows[i].email}, ${rows[j].email}) - already matched before`,
       );
@@ -348,9 +362,7 @@ export async function matchParticipants(): Promise<Match[]> {
       if (used.has(i) || used.has(j)) continue;
 
       // skip if they've met before
-      const met1 = prevMap.get(id1)?.has(id2) ?? false;
-      const met2 = prevMap.get(id2)?.has(id1) ?? false;
-      if (met1 || met2) {
+      if (metBefore(i, j)) {
         console.log(
           `Skipping pair (${rows[i].email}, ${rows[j].email}) - already matched before`,
         );
@@ -492,69 +504,87 @@ export async function updateCurrMatches(matches: Match[]): Promise<Match[]> {
 }
 
 /**
- * Helper: inserts or appends a single side of a match into previous_matches.
+ * Helper: records one match in previous_matches, unless those two emails were already matched.
+ * Emails are what identify the pair across rounds; the response ids are kept for reference only,
+ * since responses are deleted when a round resets.
  */
-async function updatePreviousMatchesForParty(
-  ownerId: string,
-  partnerId: string,
+async function recordPreviousMatch(
+  person1: { id: string; email: string },
+  person2: { id: string; email: string },
   similarity_score: number,
   emoji: string,
 ): Promise<void> {
-  // Check if this match already exists (either direction)
-  const { data: existingMatch1, error: checkErr1 } = await supabase
+  // Check if this pair already exists (either direction).
+  // Quoted so characters like "." and "," in an email are not read as filter syntax.
+  const q = (email: string) => `"${email.replace(/["\\]/g, "\\$&")}"`;
+  const { data: existing, error: checkErr } = await supabase
     .from("previous_matches")
-    .select("*")
-    .eq("person1_id", ownerId)
-    .eq("person2_id", partnerId)
-    .maybeSingle();
+    .select("id")
+    .or(
+      `and(person1_email.eq.${q(person1.email)},person2_email.eq.${q(person2.email)}),` +
+        `and(person1_email.eq.${q(person2.email)},person2_email.eq.${q(person1.email)})`,
+    )
+    .limit(1);
 
-  const { data: existingMatch2, error: checkErr2 } = await supabase
-    .from("previous_matches")
-    .select("*")
-    .eq("person1_id", partnerId)
-    .eq("person2_id", ownerId)
-    .maybeSingle();
-
-  if (checkErr1 || checkErr2) {
-    console.error("Error checking existing match for", ownerId, checkErr1 || checkErr2);
+  if (checkErr) {
+    console.error("Error checking existing match for", person1.email, checkErr);
     return;
   }
 
-  if (!existingMatch1 && !existingMatch2) {
-    // no existing match: insert new
-    const { error: insertErr } = await supabase.from("previous_matches").insert([
-      {
-        person1_id: ownerId,
-        person2_id: partnerId,
-        similarity_score: similarity_score,
-        emoji: emoji,
-      },
-    ]);
-    if (insertErr) {
-      console.error("Error inserting previous_matches for", ownerId, insertErr);
-    } else {
-      console.log("Created previous_matches row for", ownerId);
-    }
+  if (existing && existing.length > 0) {
+    console.log("Match already exists in previous_matches for", person1.email, "and", person2.email);
+    return;
+  }
+
+  const { error: insertErr } = await supabase.from("previous_matches").insert([
+    {
+      person1_id: person1.id,
+      person2_id: person2.id,
+      person1_email: person1.email,
+      person2_email: person2.email,
+      similarity_score: similarity_score,
+      emoji: emoji,
+    },
+  ]);
+  if (insertErr) {
+    console.error("Error inserting previous_matches for", person1.email, insertErr);
   } else {
-    console.log("Match already exists in previous_matches for", ownerId, "and", partnerId);
+    console.log("Created previous_matches row for", person1.email, "and", person2.email);
   }
 }
 
-// TAKES AN ARRAY Match[] AND APPENDS THE UUID Match.person2_id TO Match.person1_id's ROW.
-// ALSO APPENDS THE Match.similarity_score TO THE similarity_scores[] OF Match.person1_id's ROW,
-// AND THE Match.emoji TO THE emojis[] OF Match.person1_id's ROW.
-// IF ROW FOR Match.person1_id DOES NOT ALREADY EXIST, CREATES A ROW.
-// REPEATS THIS PERSON FOR ALL Match.person2_id's (since a Match is a pair, we need to account for both parties of the pair).
+// TAKES AN ARRAY Match[] AND RECORDS EACH PAIR IN previous_matches, BY BOTH PEOPLE'S EMAILS,
+// SO FUTURE ROUNDS NEVER RE-MATCH THEM EVEN IF THEY SIGN UP AGAIN WITH A NEW RESPONSE.
 export async function updatePreviousMatches(matches: Match[]): Promise<void> {
   if (matches.length === 0) {
     console.log("No matches to update in previous_matches.");
     return;
   }
 
-  for (const m of matches) {
-    const { person1_id, person2_id, similarity_score, emoji } = m;
+  const ids = Array.from(new Set(matches.flatMap((m) => [m.person1_id, m.person2_id])));
+  const { data: people, error: peopleErr } = await supabase
+    .from("form_responses")
+    .select("id, email")
+    .in("id", ids);
+  if (peopleErr) {
+    console.error("Could not look up emails for previous_matches:", peopleErr);
+    throw peopleErr;
+  }
+  const emailById = new Map((people ?? []).map((p) => [p.id, normalizeEmail(p.email)]));
 
-    // update for both sides (but only insert once to avoid duplicates)
-    await updatePreviousMatchesForParty(person1_id, person2_id, similarity_score, emoji);
+  for (const m of matches) {
+    const email1 = emailById.get(m.person1_id);
+    const email2 = emailById.get(m.person2_id);
+    if (!email1 || !email2) {
+      console.error("Skipping previous_matches row with a missing email:", m.person1_id, m.person2_id);
+      continue;
+    }
+
+    await recordPreviousMatch(
+      { id: m.person1_id, email: email1 },
+      { id: m.person2_id, email: email2 },
+      m.similarity_score,
+      m.emoji,
+    );
   }
 }
