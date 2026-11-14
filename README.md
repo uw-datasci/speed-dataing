@@ -57,15 +57,16 @@ API failures, and invalid output fall back to two generic questions. Old matches
 without saved starters also display generic questions.
 
 Generation uses at most four concurrent requests, a 12-second request timeout,
-one SDK retry, and a shared 45-second deadline for loading profiles and generating
+one SDK retry, and a shared 30-second deadline for loading profiles and generating
 the round's starters. Pairs left when that deadline expires receive fallback
-questions. The matching route requests a 120-second function duration; verify
-that your hosting plan supports it and that embedding generation, this deadline,
-and database writes fit within it. Larger events may need a durable background job.
+questions. The matching route runs with a 60-second function duration (the Hobby
+plan ceiling), which must fit local embedding generation, this deadline, and
+database writes. Larger events may need a durable background job.
 
-The Anthropic generator does not require `OPENAI_API_KEY`. The existing matching
-algorithm still requires it when participants lack cached OpenAI embeddings.
+Manual pairs (`manual_match_pairs`) get conversation starters like any other pair.
+Embeddings are generated locally (see `src/lib/matchmaker/embedder.ts`), so neither
+matching nor starters need an OpenAI key.
 
 Run `pnpm test` for mocked Anthropic/Supabase checks, including validation,
-fallbacks, profile filtering, concurrency, and operation without an OpenAI key.
+fallbacks, profile filtering, concurrency, and cached embeddings.
 These tests do not use real credentials or call live services.

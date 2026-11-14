@@ -195,26 +195,18 @@ test("profile lookup failure preserves pairs with fallback questions", async (t)
   assert.deepEqual(result, [{ ...matches[0], conversation_starters: getFallbackConversationStarters() }]);
 });
 
-test("matching imports and cached embeddings work without an OpenAI key", async (t) => {
-  // dotenv may load other settings on import, but this file intentionally has no OpenAI key.
+test("matching imports and cached embeddings skip the local model and OpenAI", async (t) => {
   const { updateFormResponsesTableWithVectorEmbeddings } = await import("../src/lib/matchmaker/embeddings");
+  const { EMBEDDING_DIM } = await import("../src/lib/matchmaker/embedder");
   delete process.env.OPENAI_API_KEY;
   let calls = 0;
   t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
+    // Only Supabase may be reached: a cached vector of the current model's size needs no model download.
     assert.equal(new URL(input instanceof Request ? input.url : String(input)).hostname, "supabase.example");
     calls++;
-    return new Response(JSON.stringify([{ id: "cached", vector_embedding: [1, 0] }]), { headers: { "content-type": "application/json" } });
+    const cached = Array.from({ length: EMBEDDING_DIM }, (_, i) => (i === 0 ? 1 : 0));
+    return new Response(JSON.stringify([{ id: "cached", vector_embedding: cached }]), { headers: { "content-type": "application/json" } });
   });
   await updateFormResponsesTableWithVectorEmbeddings();
   assert.equal(calls, 1);
-});
-
-test("missing embeddings report a clear error without an OpenAI key", async (t) => {
-  const { updateFormResponsesTableWithVectorEmbeddings } = await import("../src/lib/matchmaker/embeddings");
-  delete process.env.OPENAI_API_KEY;
-  t.mock.method(globalThis, "fetch", async (input: string | URL | Request) => {
-    assert.equal(new URL(input instanceof Request ? input.url : String(input)).hostname, "supabase.example");
-    return new Response(JSON.stringify([{ id: "uncached", vector_embedding: null }]), { headers: { "content-type": "application/json" } });
-  });
-  await assert.rejects(updateFormResponsesTableWithVectorEmbeddings(), /OPENAI_API_KEY is required/);
 });

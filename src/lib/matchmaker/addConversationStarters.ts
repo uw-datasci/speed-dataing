@@ -5,7 +5,8 @@ import { createConversationStarterGenerator, type ConversationProfile } from "./
 import { getFallbackConversationStarters } from "./conversationStarterData";
 import type { Match } from "./types";
 
-const GENERATION_BUDGET_MS = 45_000;
+// Must leave room for embeddings and DB writes inside run-matching's 60s maxDuration.
+const GENERATION_BUDGET_MS = 30_000;
 const CONCURRENCY = 4;
 
 /** Enrich selected pairs once, before their shared match rows are inserted. */
