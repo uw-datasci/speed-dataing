@@ -1,6 +1,5 @@
 allowBuilds:
   '@tailwindcss/oxide': false
-  esbuild: true
   onnxruntime-node: false
   protobufjs: false
   sharp: false
