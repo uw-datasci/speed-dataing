@@ -43,11 +43,11 @@ interface Participant {
 const oddId = uuidv4();
 const odd_participant: Participant = {
   id: oddId,
-  email: "j236xu@uwaterloo.ca",
-  name: "Jocelyn Xu",
+  email: "z95xie@uwaterloo.ca",
+  name: "Molly Xie",
   pronouns: "She/Her",
   program: "CS", // used for vector embedding
-  year: "2B", // used for vector embedding
+  year: "2A", // used for vector embedding
   social_media_links: "https://www.linkedin.com/in/jocelyn-xu-xt/",
   career: "Ideally quant, currently SWE. ", // used for vector embedding
   friend_traits: "A calm and respectful friend. ", // used for vector embedding
