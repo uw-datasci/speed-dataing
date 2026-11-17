@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { requireAdminApi } from "@/lib/auth/api";
+import { addConversationStarters } from "@/lib/matchmaker/addConversationStarters";
 import {
   clearCurrMatchesTable,
   updateFormResponsesTableWithVectorEmbeddings,
@@ -13,7 +14,8 @@ import {
   updatePreviousMatches,
 } from "@/lib/matchmaker/embeddings";
 
-// Local embedding model is CPU-bound; give it the full Hobby-plan ceiling instead of the 10s default.
+// Local embedding model is CPU-bound and starter generation is bounded (see
+// GENERATION_BUDGET_MS); give both the full Hobby-plan ceiling instead of the 10s default.
 export const maxDuration = 60;
 
 // Pool of unique emojis for matches (exactly 100 emojis)
@@ -281,13 +283,17 @@ export async function POST(request: NextRequest) {
       emoji: uniqueEmojis[index],
     }));
 
-    // Step 6: Update curr_matches table
-    console.log("[Run Matching API] Step 6: Updating curr_matches table...");
-    const updatedMatches = await updateCurrMatches(matchesWithEmojis);
+    // Step 6: Generate the two shared starters once per selected pair.
+    console.log("[Run Matching API] Step 6: Generating conversation starters...");
+    const matchesWithStarters = await addConversationStarters(matchesWithEmojis);
 
-    // Step 7: Update previous_matches table
+    // Step 7: Save the starters alongside each match's emoji and score.
+    console.log("[Run Matching API] Step 7: Updating curr_matches table...");
+    const updatedMatches = await updateCurrMatches(matchesWithStarters);
+
+    // Step 8: Update previous_matches table
     console.log(
-      "[Run Matching API] Step 7: Updating previous_matches table..."
+      "[Run Matching API] Step 8: Updating previous_matches table..."
     );
     await updatePreviousMatches(matchesWithEmojis);
 
