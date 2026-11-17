@@ -222,10 +222,8 @@ export async function matchParticipants(
     matches.push({
       person1_id: pair.person1_id,
       person2_id: pair.person2_id,
-      similarity_score: cosineSimilarity(
-        allRows[person1Index].vector_embedding!,
-        allRows[person2Index].vector_embedding!,
-      ),
+      // Manual pairs always show a 90% match score instead of their real similarity.
+      similarity_score: 0.9,
       emoji: "",
     });
   }
